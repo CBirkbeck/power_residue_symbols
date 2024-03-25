@@ -9,11 +9,11 @@ variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2: p ≠ ⊥)
 variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) [hp2 : Fact (p ≠ ⊥)]
 
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
-def ResidueFieldAtPrime (hp : Ideal.IsPrime p) :=
+abbrev ResidueFieldAtPrime (hp : Ideal.IsPrime p) :=
   LocalRing.ResidueField (Localization.AtPrime p)
 
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
-def ResidueFieldAtPrime2 :=  𝓞 F ⧸ p
+abbrev ResidueFieldAtPrime2 := 𝓞 F ⧸ p
 
 noncomputable section
 
@@ -33,14 +33,11 @@ noncomputable instance (hp2 : p ≠ ⊥) : Field (ResidueFieldAtPrime2 p) := by
 
 
 
+abbrev residue_map : 𝓞 F →+* (ResidueFieldAtPrime p hp) :=
+  (LocalRing.residue (Localization.AtPrime p)).comp (algebraMap (𝓞 F) (Localization.AtPrime p))
 
 
-
-def residue_map2 : 𝓞 F →+* (ResidueFieldAtPrime2 p) := by
-  have := Ideal.Quotient.mk p
-  unfold ResidueFieldAtPrime2
-  convert this
-
+abbrev residue_map2 : 𝓞 F →+* (ResidueFieldAtPrime2 p) := Ideal.Quotient.mk p
 
 instance A   : Fintype (ResidueFieldAtPrime2 p) := by
   letI := Ideal.fintypeQuotientOfFreeOfNeBot p hp2.out
@@ -50,7 +47,9 @@ instance A   : Fintype (ResidueFieldAtPrime2 p) := by
 
 
 lemma l1 : Fintype.card (ResidueFieldAtPrime2 p) = Ideal.absNorm p := by
-  sorry
+  rw [@Ideal.absNorm_apply]
+  rw [Submodule.cardQuot_apply]
+
 
 lemma norm_div_lemmas (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
       (hpn : p ⊔ Ideal.span ({(n : (𝓞 F))} : Set (𝓞 F)) = ⊤) : n  ∣ ((Ideal.absNorm p) - 1) := by
