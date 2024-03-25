@@ -35,7 +35,7 @@ def residue_map2 : 𝓞 F →+* (ResidueFieldAtPrime2 p) := by
 
 
 instance   : Fintype (ResidueFieldAtPrime2 p) := by
-  letI := Ideal.fintypeQuotientOfFreeOfNeBot p hp2
+  letI := Ideal.fintypeQuotientOfFreeOfNeBot p hp2.out
   convert this
 
 lemma l1 [Fintype (ResidueFieldAtPrime2 p)] :
