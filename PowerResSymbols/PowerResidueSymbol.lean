@@ -12,7 +12,7 @@ def ResidueFieldAtPrime (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) :=
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
 def ResidueFieldAtPrime2 (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) :=  𝓞 F ⧸ p
 
-variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
+variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2: p ≠ ⊥)
 
 noncomputable section
 
@@ -27,9 +27,12 @@ noncomputable instance (hp2 : p ≠ ⊥) : Field (ResidueFieldAtPrime2 p hp) := 
 def residue_map : 𝓞 F →+* (ResidueFieldAtPrime p hp) :=
   (LocalRing.residue (Localization.AtPrime p)).comp (algebraMap (𝓞 F) (Localization.AtPrime p))
 
-instance inst1 (hp2: p ≠ ⊥) : Fintype (ResidueFieldAtPrime2 p hp) := by
+instance   : Fintype (ResidueFieldAtPrime2 p hp) := by
   letI := Ideal.fintypeQuotientOfFreeOfNeBot p hp2
   convert this
+
+lemma l1 [Fintype (ResidueFieldAtPrime2 p hp)] :
+  Fintype.card (ResidueFieldAtPrime2 p hp) = Ideal.absNorm p := by sorry
 
 lemma norm_div_lemmas (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
       (hpn : p ⊔ Ideal.span ({(n : (𝓞 F))} : Set (𝓞 F)) = ⊤) : n  ∣ ((Ideal.absNorm p) - 1) := by
