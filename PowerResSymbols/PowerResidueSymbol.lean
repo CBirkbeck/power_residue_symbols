@@ -38,7 +38,9 @@ instance (hp2 : p ≠ ⊥) : Fintype (ResidueFieldAtPrime2 p) := by
   letI := Ideal.fintypeQuotientOfFreeOfNeBot p hp2
   convert this
 
-lemma l1 (hp2 : p ≠ ⊥ ) :
+def cardinal := Fintype.card (ResidueFieldAtPrime2 p)
+
+lemma l1 (hp2 : p ≠ ⊥) :
   Fintype.card (ResidueFieldAtPrime2 p) = Ideal.absNorm p := by
   sorry
 
