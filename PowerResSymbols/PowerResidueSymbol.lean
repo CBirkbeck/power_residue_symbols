@@ -2,6 +2,7 @@ import Mathlib.NumberTheory.Cyclotomic.Basic
 import Mathlib.RingTheory.Ideal.Norm
 
 open scoped NumberField BigOperators
+open scoped Classical
 
 variable {F : Type*} [Field F] [NumberField F] (ζ : 𝓞 F) (n : ℕ) (h : IsPrimitiveRoot ζ n)
 variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2: p ≠ ⊥)
@@ -39,19 +40,31 @@ abbrev residue_map : 𝓞 F →+* (ResidueFieldAtPrime p hp) :=
 
 abbrev residue_map2 : 𝓞 F →+* (ResidueFieldAtPrime2 p) := Ideal.Quotient.mk p
 
-instance A   : Fintype (ResidueFieldAtPrime2 p) := by
+instance : Fintype (ResidueFieldAtPrime2 p) := by
   letI := Ideal.fintypeQuotientOfFreeOfNeBot p hp2.out
   convert this
 
-
-
+instance : Fintype ( (ResidueFieldAtPrime2 p)ˣ ) := by
+  infer_instance
 
 lemma l1 : Fintype.card (ResidueFieldAtPrime2 p) = Ideal.absNorm p := by
   rw [@Ideal.absNorm_apply]
   rw [Submodule.cardQuot_apply]
 
+instance : IsCyclic (ResidueFieldAtPrime2 p)ˣ := by
+  infer_instance
 
-lemma norm_div_lemmas (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
+lemma l3 : Fintype.card ( (ResidueFieldAtPrime2 p)ˣ ) = ((Ideal.absNorm p) - 1) := by
+  rw [← l1]
+  sorry
+
+  -- rw [Ideal.absNorm_apply]
+  -- rw [Submodule.cardQuot_apply]
+  -- rw [Nat.pred_eq_sub_one]
+  -- rw [←Nat.sub_add_cancel]
+  -- rw [Nat.sub_add_cancel
+
+lemma norm_div_lemmas
       (hpn : p ⊔ Ideal.span ({(n : (𝓞 F))} : Set (𝓞 F)) = ⊤) : n  ∣ ((Ideal.absNorm p) - 1) := by
     sorry
 
