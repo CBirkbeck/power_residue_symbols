@@ -34,13 +34,11 @@ def residue_map2 : 𝓞 F →+* (ResidueFieldAtPrime2 p) := by
   convert this
 
 
-instance (hp2 : p ≠ ⊥) : Fintype (ResidueFieldAtPrime2 p) := by
+instance   : Fintype (ResidueFieldAtPrime2 p) := by
   letI := Ideal.fintypeQuotientOfFreeOfNeBot p hp2
   convert this
 
-def cardinal := Fintype.card (ResidueFieldAtPrime2 p)
-
-lemma l1 (hp2 : p ≠ ⊥) :
+lemma l1 [Fintype (ResidueFieldAtPrime2 p)] :
   Fintype.card (ResidueFieldAtPrime2 p) = Ideal.absNorm p := by
   sorry
 
