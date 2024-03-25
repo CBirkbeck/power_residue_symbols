@@ -4,7 +4,7 @@ import Mathlib.RingTheory.Ideal.Norm
 open scoped NumberField BigOperators
 
 variable {F : Type*} [Field F] [NumberField F] (ζ : 𝓞 F) (n : ℕ) (h : IsPrimitiveRoot ζ n)
-variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2: p ≠ ⊥)
+variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) [hp2: Fact (p ≠ ⊥)]
 
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
 def ResidueFieldAtPrime (hp : Ideal.IsPrime p) :=
