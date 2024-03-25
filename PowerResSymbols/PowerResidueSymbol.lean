@@ -6,7 +6,7 @@ open scoped NumberField BigOperators
 variable {F : Type*} [Field F] [NumberField F] (ζ : 𝓞 F) (n : ℕ) (h : IsPrimitiveRoot ζ n)
 variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2: p ≠ ⊥)
 
-variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2: p ≠ ⊥)
+variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) [hp2 : Fact (p ≠ ⊥)]
 
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
 def ResidueFieldAtPrime (hp : Ideal.IsPrime p) :=
@@ -42,12 +42,14 @@ def residue_map2 : 𝓞 F →+* (ResidueFieldAtPrime2 p) := by
   convert this
 
 
-instance   : Fintype (ResidueFieldAtPrime2 p) := by
-  letI := Ideal.fintypeQuotientOfFreeOfNeBot p hp2
+instance A   : Fintype (ResidueFieldAtPrime2 p) := by
+  letI := Ideal.fintypeQuotientOfFreeOfNeBot p hp2.out
   convert this
 
-lemma l1 [Fintype (ResidueFieldAtPrime2 p)] :
-  Fintype.card (ResidueFieldAtPrime2 p) = Ideal.absNorm p := by
+
+
+
+lemma l1 : Fintype.card (ResidueFieldAtPrime2 p) = Ideal.absNorm p := by
   sorry
 
 lemma norm_div_lemmas (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
