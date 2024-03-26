@@ -81,9 +81,7 @@ lemma P_cyclo (m : ℕ) : (cyclom1 m) * (cyclo 1) = (cyclo m) := by
   rw [cyclo,cyclom1,cyclo]
   rw [@Polynomial.C_1]
   simp [@pow_one]
-  have h2 := geom_sum_mul (α := Polynomial ℤ) (x:=Polynomial.X) (n:=m)
-  rw [h2]
-  -- rw [geom_sum_eq]
+  rw [geom_sum_mul (α := Polynomial ℤ) (x:=Polynomial.X) (n:=m)]
 
 lemma Pzeta (i : ℕ): ¬ (n ∣ i) → Polynomial.eval (ζ^i) P = 0 := by
   intro hi
