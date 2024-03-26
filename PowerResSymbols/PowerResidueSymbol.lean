@@ -5,7 +5,7 @@ import Mathlib.Data.Polynomial.Basic
 
 open scoped NumberField BigOperators
 
-variable {F : Type*} [Field F] [NumberField F] (ζ : 𝓞 F) (n : ℕ) (h : IsPrimitiveRoot ζ n)
+variable {F : Type*} [Field F] [NumberField F] (ζ : 𝓞 F) (n : ℕ) (hn : n > 0) (h : IsPrimitiveRoot ζ n)
 variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
 
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
@@ -46,8 +46,6 @@ lemma l1 : Fintype.card (ResidueFieldAtPrime2 p hp hp2) = Ideal.absNorm p := by
   symm
   convert Submodule.cardQuot_apply _
 
-instance : IsCyclic (ResidueFieldAtPrime2 p hp hp2)ˣ := by
-  infer_instance
 open scoped Classical
 
 -- compute the cardinality of the units of the residue field
@@ -138,11 +136,17 @@ lemma primitivemodp (hpn : IsCoprime n (Ideal.absNorm p)) :
     rw [← Ideal.Quotient.eq,hi]
     exact rfl
 
+lemma isunit : IsUnit ((residue_map2 p hp hp2) ζ) := by
+  have := IsPrimitiveRoot.isUnit h hn
+  exact IsUnit.map (residue_map2 p hp hp2) this
+
+
 -- deduce the divisibility result
 lemma norm_div_lemmas (hpn : IsCoprime n (Ideal.absNorm p)) : n  ∣ ((Ideal.absNorm p) - 1) := by
     rw [← l3 p hp hp2]
     have divide : orderOf ((residue_map2 p hp hp2) ζ) ∣ Fintype.card ((ResidueFieldAtPrime2 p hp hp2)ˣ)  := by
-      -- exact orderOf_dvd_card
+      have := orderOf_dvd_card (G := (ResidueFieldAtPrime2 p hp hp2)ˣ) (x := ⟨ (residue_map2 p hp hp2) ζ, isunit⟩ )
+
       sorry
     have := IsPrimitiveRoot.eq_orderOf (primitivemodp ζ n h p hp hp2 hpn)
     rw [← this] at divide
