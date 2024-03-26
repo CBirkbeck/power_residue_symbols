@@ -48,15 +48,22 @@ lemma l1 : Fintype.card (ResidueFieldAtPrime2 p) = Ideal.absNorm p := by
   symm
   convert Submodule.cardQuot_apply _
 
+
 instance : IsCyclic (ResidueFieldAtPrime2 p)ˣ := by
   infer_instance
 open scoped Classical
 
+-- compute the cardinality of the units of the residue field
 lemma l3 : Fintype.card ( (ResidueFieldAtPrime2 p)ˣ ) = ((Ideal.absNorm p) - 1) := by
   rw [← l1]
   rw [← Fintype.card_units]
+  sorry
 
+-- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
 
+-- show that we have a group homomorphism from the n-th roots of unity to the units of the residue field
+
+-- deduce the divisibility result
 lemma norm_div_lemmas
       (hpn : p ⊔ Ideal.span ({(n : (𝓞 F))} : Set (𝓞 F)) = ⊤) : n  ∣ ((Ideal.absNorm p) - 1) := by
     sorry
