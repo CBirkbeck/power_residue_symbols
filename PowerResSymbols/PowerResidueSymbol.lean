@@ -6,7 +6,7 @@ import Mathlib.Algebra.GroupWithZero.NonZeroDivisors
 
 open scoped NumberField BigOperators
 
-variable {F : Type*} [Field F] [NumberField F] (ζ : 𝓞 F) (n : ℕ) (hn : n > 0) (h : IsPrimitiveRoot ζ n)
+variable {F : Type*} [Field F] [NumberField F] (ζ : 𝓞 F) (n : ℕ+) (h : IsPrimitiveRoot ζ n)
 variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
 
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
@@ -54,7 +54,7 @@ lemma l3 : Fintype.card ((ResidueFieldAtPrime2 p hp hp2)ˣ ) = ((Ideal.absNorm p
   rw [← l1]
   rw [← Fintype.card_units]
 
-lemma n_not_zero (hpn : IsCoprime n (Ideal.absNorm p)) : (residue_map2 p hp hp2) n ≠ 0 := by
+lemma n_not_zero (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : (residue_map2 p hp hp2) n ≠ 0 := by
   have := FiniteField.cast_card_eq_zero (ResidueFieldAtPrime2 p hp hp2)
   rw [l1] at this
   rcases hpn with ⟨ a,b,H⟩
@@ -124,7 +124,7 @@ lemma Pzeta (i : ℕ):
 
 
 -- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
-lemma injectivity (hpn : IsCoprime n (Ideal.absNorm p)) :
+lemma injectivity (hpn : IsCoprime (n : ℤ) (Ideal.absNorm p)) :
   ∀ (i : ℕ), ζ^i-1 ∈ p ↔ n ∣ i := by
   intro i
   constructor
@@ -151,11 +151,21 @@ lemma injectivity (hpn : IsCoprime n (Ideal.absNorm p)) :
 
 #check injectivity
 
-lemma primitivemodp (hpn : IsCoprime n (Ideal.absNorm p)) :
+lemma primitivemodp' (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
+  IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by
+  haveI  : NeZero (n : ResidueFieldAtPrime2 p hp hp2) := by
+    have := n_not_zero  n p hp hp2 hpn
+    sorry
+  rw [← Polynomial.isRoot_cyclotomic_iff] at *
+  have h1 := Polynomial.IsRoot.map   (x := ζ) (f := residue_map2 p hp hp2) h
+  simp at *
+  exact h1
+
+lemma primitivemodp (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by
     rw [IsPrimitiveRoot.iff_def]
     constructor
-    . calc (residue_map2 p hp hp2) ζ ^ n = (residue_map2 p hp hp2) (ζ^n) := by exact rfl
+    . calc (residue_map2 p hp hp2) ζ ^ (n : ℕ)= (residue_map2 p hp hp2) (ζ^ (n : ℕ)) := by exact rfl
                 _ = (residue_map2 p hp hp2) 1 := by rw [((IsPrimitiveRoot.iff_def ζ n).mp h).1]
                 _ = 1 := by exact rfl
     intro i hi
@@ -169,7 +179,7 @@ lemma isunit : IsUnit ((residue_map2 p hp hp2) ζ) :=
   IsUnit.map (residue_map2 p hp hp2) (IsPrimitiveRoot.isUnit h hn)
 
 -- deduce the divisibility result
-lemma norm_div_lemmas (hpn : IsCoprime n (Ideal.absNorm p)) : n  ∣ ((Ideal.absNorm p) - 1) := by
+lemma norm_div_lemmas (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : (n : ℕ)  ∣ ((Ideal.absNorm p) - 1) := by
     rw [← l3 p hp hp2]
     have divide : orderOf ((residue_map2 p hp hp2) ζ) ∣ Fintype.card ((ResidueFieldAtPrime2 p hp hp2)ˣ)  := by
       have := orderOf_dvd_card (G := (ResidueFieldAtPrime2 p hp hp2)ˣ) (x := ⟨ (residue_map2 p hp hp2) ζ, isunit⟩ )
