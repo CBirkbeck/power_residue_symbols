@@ -138,6 +138,7 @@ lemma injectivity (hpn : IsCoprime n (Ideal.absNorm p)) :
          simp
          sorry
       sorry
+
     have equalzetai : (residue_map2 p hp hp2) (ζ^i) = 1 := by sorry
     rw [equalzetai] at evalmodp
     sorry
@@ -164,17 +165,14 @@ lemma primitivemodp (hpn : IsCoprime n (Ideal.absNorm p)) :
     rw [← Ideal.Quotient.eq,hi]
     exact rfl
 
-lemma isunit : IsUnit ((residue_map2 p hp hp2) ζ) := by
-  have := IsPrimitiveRoot.isUnit h hn
-  exact IsUnit.map (residue_map2 p hp hp2) this
-
+lemma isunit : IsUnit ((residue_map2 p hp hp2) ζ) :=
+  IsUnit.map (residue_map2 p hp hp2) (IsPrimitiveRoot.isUnit h hn)
 
 -- deduce the divisibility result
 lemma norm_div_lemmas (hpn : IsCoprime n (Ideal.absNorm p)) : n  ∣ ((Ideal.absNorm p) - 1) := by
     rw [← l3 p hp hp2]
     have divide : orderOf ((residue_map2 p hp hp2) ζ) ∣ Fintype.card ((ResidueFieldAtPrime2 p hp hp2)ˣ)  := by
       have := orderOf_dvd_card (G := (ResidueFieldAtPrime2 p hp hp2)ˣ) (x := ⟨ (residue_map2 p hp hp2) ζ, isunit⟩ )
-
       sorry
     have := IsPrimitiveRoot.eq_orderOf (primitivemodp ζ n h p hp hp2 hpn)
     rw [← this] at divide
