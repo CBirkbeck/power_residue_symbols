@@ -89,9 +89,10 @@ lemma Pzeta (i : ℕ):
   intro hi
   have is_zero : Polynomial.eval₂ (Int.castRingHom (𝓞 F)) (ζ^i) (cyclo n) = 0 := by
     rw [cyclo]
+    simp only [map_one, Polynomial.eval₂_sub, Polynomial.eval₂_X_pow, Polynomial.eval₂_one]
     have : (ζ^i)^n = (ζ^n)^i := by ring
-    rw [this,((IsPrimitiveRoot.iff_def ζ n).mp h).1]
-    ring
+    rw [this, ((IsPrimitiveRoot.iff_def ζ n).mp h).1]
+    ring_nf
   have non_zero : Polynomial.eval (ζ^i) (cyclo 1) ≠ 0 := by sorry
   rw [← P_cyclo] at is_zero
   sorry
