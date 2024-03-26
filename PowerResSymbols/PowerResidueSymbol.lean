@@ -49,11 +49,22 @@ instance : IsCyclic (ResidueFieldAtPrime2 p hp hp2)ˣ := by
 open scoped Classical
 
 -- compute the cardinality of the units of the residue field
-lemma l3 : Fintype.card ( (ResidueFieldAtPrime2 p hp hp2)ˣ ) = ((Ideal.absNorm p) - 1) := by
+lemma l3 : Fintype.card ((ResidueFieldAtPrime2 p hp hp2)ˣ ) = ((Ideal.absNorm p) - 1) := by
   rw [← l1]
   rw [← Fintype.card_units]
 
+lemma n_not_zero (hpn : IsCoprime n (Ideal.absNorm p)) : (residue_map2 p hp hp2) n ≠ 0 := by
+  sorry
 
+def cyclo : Polynomial (𝓞 F) := (Polynomial.X ^n) - (Polynomial.C 1)
+
+def P : Polynomial (𝓞 F) := sorry
+
+lemma P1 : Polynomial.eval 1 P = (n : 𝓞 F) := by sorry
+
+lemma P_cyclo : P * (cyclo 1) = (cyclo n) := by sorry
+
+lemma Pzeta (i : ℕ): ¬ (n ∣ i) → Polynomial.eval (ζ^i) P = 0 := by sorry
 -- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
 lemma injectivity (hpn : IsCoprime n (Ideal.absNorm p)) :
   ∀ (i : ℕ), ζ^i-1 ∈ p ↔ n ∣ i := by
@@ -74,15 +85,16 @@ lemma primitivemodp (hpn : IsCoprime n (Ideal.absNorm p)) :
     rw [← Ideal.Quotient.eq,hi]
     exact rfl
 
-
-#check primitivemodp
-
 -- deduce the divisibility result
 lemma norm_div_lemmas (hpn : IsCoprime n (Ideal.absNorm p)) : n  ∣ ((Ideal.absNorm p) - 1) := by
     rw [← l3 p hp hp2]
+    have divide : orderOf ((residue_map2 p hp hp2) ζ) ∣ Fintype.card ((ResidueFieldAtPrime2 p hp hp2)ˣ)  := by
+      -- exact orderOf_dvd_card
+      sorry
     have := IsPrimitiveRoot.eq_orderOf (primitivemodp ζ n h p hp hp2 hpn)
-    -- orderOf_dvd_card
-    sorry
+    rw [← this] at divide
+    exact divide
+
 
 lemma exits_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
     (hpn : p ⊔ Ideal.span ({(n * a : (𝓞 F))} : Set (𝓞 F)) = ⊤) :
