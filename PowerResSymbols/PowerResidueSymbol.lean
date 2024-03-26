@@ -75,7 +75,11 @@ abbrev cyclo (m : ℕ) : Polynomial ℤ := (Polynomial.X ^m) - (Polynomial.C 1)
 abbrev cyclom1  (m : ℕ): Polynomial ℤ :=
   Finset.sum (Finset.range m) fun (i : ℕ) => Polynomial.X ^ i
 
-lemma P1 : Polynomial.eval 1 P = (n : 𝓞 F) := by sorry
+lemma P1 : Polynomial.eval (1 : ℤ) (cyclom1 n) = (n : ℤ) := by
+  rw [cyclom1]
+  rw [@Polynomial.eval_geom_sum]
+  simp
+
 
 lemma P_cyclo (m : ℕ) : (cyclom1 m) * (cyclo 1) = (cyclo m) := by
   rw [cyclo,cyclom1,cyclo]
