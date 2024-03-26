@@ -2,6 +2,7 @@ import Mathlib.NumberTheory.Cyclotomic.Basic
 import Mathlib.RingTheory.Ideal.Norm
 import Mathlib.Algebra.GeomSum
 import Mathlib.Data.Polynomial.Basic
+import Mathlib.Algebra.GroupWithZero.NonZeroDivisors
 
 open scoped NumberField BigOperators
 
@@ -93,9 +94,31 @@ lemma Pzeta (i : ℕ):
     have : (ζ^i)^n = (ζ^n)^i := by ring
     rw [this, ((IsPrimitiveRoot.iff_def ζ n).mp h).1]
     ring_nf
-  have non_zero : Polynomial.eval (ζ^i) (cyclo 1) ≠ 0 := by sorry
+  have hii : ζ^i ≠ 1 := by
+    have := IsPrimitiveRoot.pow_eq_one_iff_dvd h i
+    contrapose! this
+    left
+    exact ⟨this,hi⟩
+  have non_zero : Polynomial.eval₂ (Int.castRingHom (𝓞 F)) (ζ^i) (cyclo 1) ≠ 0 := by
+    rw [cyclo]
+    simp only [pow_one, map_one, Polynomial.eval₂_sub, Polynomial.eval₂_X, Polynomial.eval₂_one,
+      ne_eq]
+    exact sub_ne_zero_of_ne hii
+
   rw [← P_cyclo] at is_zero
-  sorry
+  simp only [Polynomial.eval₂_mul] at is_zero
+  rw [mul_eq_zero] at is_zero
+  cases' is_zero with h1 h2
+  . exact h1
+  . by_contra h
+    simp only [ne_eq, Polynomial.eval₂_sub, pow_one, Polynomial.eval₂_X, map_one,
+      Polynomial.eval₂_one] at *
+    exact non_zero h2
+
+
+
+
+
 
 
 -- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
