@@ -39,10 +39,6 @@ abbrev residue_map2 : 𝓞 F →+* (ResidueFieldAtPrime2 p hp hp2) := Ideal.Quot
 
 instance as : Fintype (ResidueFieldAtPrime2 p hp hp2) := Ideal.fintypeQuotientOfFreeOfNeBot p hp2
 
-#check as
--- instance : Fintype ( (ResidueFieldAtPrime2 p)ˣ ) := by
---   infer_instance
-
 lemma l1 : Fintype.card (ResidueFieldAtPrime2 p hp hp2) = Ideal.absNorm p := by
   rw [@Ideal.absNorm_apply]
   symm
@@ -52,11 +48,17 @@ instance : IsCyclic (ResidueFieldAtPrime2 p hp hp2)ˣ := by
   infer_instance
 open scoped Classical
 
+-- compute the cardinality of the units of the residue field
 lemma l3 : Fintype.card ( (ResidueFieldAtPrime2 p hp hp2)ˣ ) = ((Ideal.absNorm p) - 1) := by
   rw [← l1]
   rw [← Fintype.card_units]
 
 
+-- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
+
+-- show that we have a group homomorphism from the n-th roots of unity to the units of the residue field
+
+-- deduce the divisibility result
 lemma norm_div_lemmas (hpn : p ⊔ Ideal.span ({(n : (𝓞 F))} : Set (𝓞 F)) = ⊤) : n  ∣ ((Ideal.absNorm p) - 1) := by
     rw [← l3 p hp hp2]
     rw?
