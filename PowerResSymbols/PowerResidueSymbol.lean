@@ -1,5 +1,7 @@
 import Mathlib.NumberTheory.Cyclotomic.Basic
 import Mathlib.RingTheory.Ideal.Norm
+import Mathlib.Algebra.GeomSum
+import Mathlib.Data.Polynomial.Basic
 
 open scoped NumberField BigOperators
 
@@ -65,15 +67,21 @@ lemma n_not_zero (hpn : IsCoprime n (Ideal.absNorm p)) : (residue_map2 p hp hp2)
   ring_nf at nquot
   sorry
 
-example : (0: F) ≠ (1 : F) := by exact?
+abbrev cyclo (m : ℕ) : Polynomial ℤ := (Polynomial.X ^m) - (Polynomial.C 1)
 
-def cyclo (m : ℕ) : Polynomial (𝓞 F) := (Polynomial.X ^m) - (Polynomial.C 1)
-
-def P : Polynomial (𝓞 F) := sorry
+abbrev cyclom1  (m : ℕ): Polynomial ℤ :=
+  Finset.sum (Finset.range m) fun (i : ℕ) => Polynomial.X ^ i
 
 lemma P1 : Polynomial.eval 1 P = (n : 𝓞 F) := by sorry
 
-lemma P_cyclo : P * (cyclo 1) = (cyclo n) := by sorry
+lemma P_cyclo : (cyclom1 n) * (cyclo 1) = (cyclo n) := by
+  rw [cyclo,cyclom1,cyclo]
+  sorry
+  -- have : Polynomial.X (R:= ℤ) ≠ 1 := by
+  --   exact Polynomial.X_ne
+
+
+  -- rw [geom_sum_eq]
 
 lemma Pzeta (i : ℕ): ¬ (n ∣ i) → Polynomial.eval (ζ^i) P = 0 := by
   intro hi
