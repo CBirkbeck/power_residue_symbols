@@ -75,11 +75,13 @@ lemma primitivemodp (hpn : IsCoprime n (Ideal.absNorm p)) :
     exact rfl
 
 
-
+#check primitivemodp
 
 -- deduce the divisibility result
-lemma norm_div_lemmas (hpn : p ⊔ Ideal.span ({(n : (𝓞 F))} : Set (𝓞 F)) = ⊤) : n  ∣ ((Ideal.absNorm p) - 1) := by
+lemma norm_div_lemmas (hpn : IsCoprime n (Ideal.absNorm p)) : n  ∣ ((Ideal.absNorm p) - 1) := by
     rw [← l3 p hp hp2]
+    have := IsPrimitiveRoot.eq_orderOf (primitivemodp ζ n h p hp hp2 hpn)
+    -- orderOf_dvd_card
     sorry
 
 lemma exits_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
