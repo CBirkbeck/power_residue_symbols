@@ -60,12 +60,15 @@ lemma n_not_zero (hpn : IsCoprime n (Ideal.absNorm p)) : (residue_map2 p hp hp2)
   rw [l1] at this
   unfold IsCoprime at hpn
   rcases hpn with ⟨ a,b,H⟩
-  have nquot : ((residue_map2 p hp hp2) a) * ((residue_map2 p hp hp2) n) = 1 := by
-    sorry
+  have nquot : (a : (ResidueFieldAtPrime2 p hp hp2)) * (n : (ResidueFieldAtPrime2 p hp hp2)) = 1 := by
+    have eq1 : ((a*n+b*(Ideal.absNorm p)):(ResidueFieldAtPrime2 p hp hp2)) = (1 : (ResidueFieldAtPrime2 p hp hp2)) := by
+      rw_mod_cast [H]
+      simp only [Nat.cast_one]
   intro hnzero
-  rw [hnzero] at nquot
+  have : (n : (ResidueFieldAtPrime2 p hp hp2)) = 0 := hnzero
+  rw [this] at nquot
   ring_nf at nquot
-  sorry
+  exact zero_ne_one nquot
 
 abbrev cyclo (m : ℕ) : Polynomial ℤ := (Polynomial.X ^m) - (Polynomial.C 1)
 
