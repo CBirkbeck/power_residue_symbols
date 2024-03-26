@@ -74,13 +74,12 @@ abbrev cyclom1  (m : ℕ): Polynomial ℤ :=
 
 lemma P1 : Polynomial.eval 1 P = (n : 𝓞 F) := by sorry
 
-lemma P_cyclo : (cyclom1 n) * (cyclo 1) = (cyclo n) := by
+lemma P_cyclo (m : ℕ) : (cyclom1 m) * (cyclo 1) = (cyclo m) := by
   rw [cyclo,cyclom1,cyclo]
-  sorry
-  -- have : Polynomial.X (R:= ℤ) ≠ 1 := by
-  --   exact Polynomial.X_ne
-
-
+  rw [@Polynomial.C_1]
+  simp [@pow_one]
+  have h2 := geom_sum_mul (α := Polynomial ℤ) (x:=Polynomial.X) (n:=m)
+  rw [h2]
   -- rw [geom_sum_eq]
 
 lemma Pzeta (i : ℕ): ¬ (n ∣ i) → Polynomial.eval (ζ^i) P = 0 := by
