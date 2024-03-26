@@ -55,6 +55,11 @@ lemma l3 : Fintype.card ( (ResidueFieldAtPrime2 p hp hp2)ˣ ) = ((Ideal.absNorm 
 
 
 -- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
+lemma injectivity (hpn : IsCoprime n (Ideal.absNorm p)) :
+  ζ^i-1 ∈ p ↔ n ∣ i := by sorry
+
+lemma primitivemodp (hpn : IsCoprime n (Ideal.absNorm p)) :
+  IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by sorry
 
 -- show that we have a group homomorphism from the n-th roots of unity to the units of the residue field
 
