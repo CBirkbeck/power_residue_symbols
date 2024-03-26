@@ -54,9 +54,20 @@ lemma l3 : Fintype.card ((ResidueFieldAtPrime2 p hp hp2)ˣ ) = ((Ideal.absNorm p
   rw [← Fintype.card_units]
 
 lemma n_not_zero (hpn : IsCoprime n (Ideal.absNorm p)) : (residue_map2 p hp hp2) n ≠ 0 := by
+  have := FiniteField.cast_card_eq_zero (ResidueFieldAtPrime2 p hp hp2)
+  rw [l1] at this
+  unfold IsCoprime at hpn
+  rcases hpn with ⟨ a,b,H⟩
+  have nquot : ((residue_map2 p hp hp2) a) * ((residue_map2 p hp hp2) n) = 1 := by
+    sorry
+  intro hnzero
+  rw [hnzero] at nquot
+  ring_nf at nquot
   sorry
 
-def cyclo : Polynomial (𝓞 F) := (Polynomial.X ^n) - (Polynomial.C 1)
+example : (0: F) ≠ (1 : F) := by exact?
+
+def cyclo (m : ℕ) : Polynomial (𝓞 F) := (Polynomial.X ^m) - (Polynomial.C 1)
 
 def P : Polynomial (𝓞 F) := sorry
 
@@ -64,7 +75,19 @@ lemma P1 : Polynomial.eval 1 P = (n : 𝓞 F) := by sorry
 
 lemma P_cyclo : P * (cyclo 1) = (cyclo n) := by sorry
 
-lemma Pzeta (i : ℕ): ¬ (n ∣ i) → Polynomial.eval (ζ^i) P = 0 := by sorry
+lemma Pzeta (i : ℕ): ¬ (n ∣ i) → Polynomial.eval (ζ^i) P = 0 := by
+  intro hi
+  have is_zero : Polynomial.eval (ζ^i) (cyclo n) = 0 := by
+    simp [cyclo]
+    have : (ζ^i)^n = (ζ^n)^i := by ring
+    rw [this,((IsPrimitiveRoot.iff_def ζ n).mp h).1]
+    ring
+  have non_zero : Polynomial.eval (ζ^i) (cyclo 1) ≠ 0 := by sorry
+  rw [← P_cyclo] at is_zero
+  sorry
+
+
+
 -- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
 lemma injectivity (hpn : IsCoprime n (Ideal.absNorm p)) :
   ∀ (i : ℕ), ζ^i-1 ∈ p ↔ n ∣ i := by
