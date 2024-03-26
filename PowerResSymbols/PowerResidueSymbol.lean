@@ -100,7 +100,17 @@ lemma Pzeta (i : ℕ):
 -- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
 lemma injectivity (hpn : IsCoprime n (Ideal.absNorm p)) :
   ∀ (i : ℕ), ζ^i-1 ∈ p ↔ n ∣ i := by
-  sorry
+  intro i
+  constructor
+  . intro hinp
+    by_contra hi
+    sorry
+  intro hi
+  rcases hi with ⟨ k,rfl⟩
+  have : ζ^(n*k) = (ζ^n)^k := by ring
+  rw [this,((IsPrimitiveRoot.iff_def ζ n).mp h).1]
+  ring_nf
+  exact Ideal.zero_mem p
 
 
 lemma primitivemodp (hpn : IsCoprime n (Ideal.absNorm p)) :
