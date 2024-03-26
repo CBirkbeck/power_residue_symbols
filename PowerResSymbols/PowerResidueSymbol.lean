@@ -58,12 +58,13 @@ lemma l3 : Fintype.card ((ResidueFieldAtPrime2 p hp hp2)ˣ ) = ((Ideal.absNorm p
 lemma n_not_zero (hpn : IsCoprime n (Ideal.absNorm p)) : (residue_map2 p hp hp2) n ≠ 0 := by
   have := FiniteField.cast_card_eq_zero (ResidueFieldAtPrime2 p hp hp2)
   rw [l1] at this
-  unfold IsCoprime at hpn
   rcases hpn with ⟨ a,b,H⟩
   have nquot : (a : (ResidueFieldAtPrime2 p hp hp2)) * (n : (ResidueFieldAtPrime2 p hp hp2)) = 1 := by
     have eq1 : ((a*n+b*(Ideal.absNorm p)):(ResidueFieldAtPrime2 p hp hp2)) = (1 : (ResidueFieldAtPrime2 p hp hp2)) := by
       rw_mod_cast [H]
       simp only [Nat.cast_one]
+    rw [← eq1,this]
+    ring
   intro hnzero
   have : (n : (ResidueFieldAtPrime2 p hp hp2)) = 0 := hnzero
   rw [this] at nquot
