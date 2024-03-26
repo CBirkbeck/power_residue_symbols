@@ -104,6 +104,16 @@ lemma injectivity (hpn : IsCoprime n (Ideal.absNorm p)) :
   constructor
   . intro hinp
     by_contra hi
+    have eval0 := Pzeta ζ n i hi
+    have evalmodp : Polynomial.eval₂ ((residue_map2 p hp hp2).comp (Int.castRingHom (𝓞 F))) ((residue_map2 p hp hp2) (ζ^i)) (cyclom1 n) = 0 := by
+      have : Polynomial.eval₂ ((residue_map2 p hp hp2).comp (Int.castRingHom (𝓞 F))) ((residue_map2 p hp hp2) (ζ^i)) (cyclom1 n) =
+         Finset.sum (Finset.range n) fun (i : ℕ) => (residue_map2 p hp hp2) ζ^i := by
+         unfold cyclom1
+         simp
+         sorry
+      sorry
+    have equalzetai : (residue_map2 p hp hp2) (ζ^i) = 1 := by sorry
+    rw [equalzetai] at evalmodp
     sorry
   intro hi
   rcases hi with ⟨ k,rfl⟩
@@ -112,6 +122,7 @@ lemma injectivity (hpn : IsCoprime n (Ideal.absNorm p)) :
   ring_nf
   exact Ideal.zero_mem p
 
+#check injectivity
 
 lemma primitivemodp (hpn : IsCoprime n (Ideal.absNorm p)) :
   IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by
@@ -121,7 +132,7 @@ lemma primitivemodp (hpn : IsCoprime n (Ideal.absNorm p)) :
                 _ = (residue_map2 p hp hp2) 1 := by rw [((IsPrimitiveRoot.iff_def ζ n).mp h).1]
                 _ = 1 := by exact rfl
     intro i hi
-    rw [← injectivity ζ n p hpn i]
+    rw [← injectivity ζ n h p hp hp2 hpn i]
     have : (residue_map2 p hp hp2) ζ^i = (residue_map2 p hp hp2 (ζ^i)) := rfl
     rw [this] at hi
     rw [← Ideal.Quotient.eq,hi]
