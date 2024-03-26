@@ -84,17 +84,17 @@ lemma P_cyclo (m : ℕ) : (cyclom1 m) * (cyclo 1) = (cyclo m) := by
   simp [@pow_one]
   rw [geom_sum_mul (α := Polynomial ℤ) (x:=Polynomial.X) (n:=m)]
 
-lemma Pzeta (i : ℕ): ¬ (n ∣ i) → Polynomial.eval (ζ^i) P = 0 := by
+lemma Pzeta (i : ℕ):
+  ¬ (n ∣ i) → Polynomial.eval₂ (Int.castRingHom (𝓞 F)) (ζ^i) (cyclom1 n) = 0:= by
   intro hi
-  have is_zero : Polynomial.eval (ζ^i) (cyclo n) = 0 := by
-    simp [cyclo]
+  have is_zero : Polynomial.eval₂ (Int.castRingHom (𝓞 F)) (ζ^i) (cyclo n) = 0 := by
+    rw [cyclo]
     have : (ζ^i)^n = (ζ^n)^i := by ring
     rw [this,((IsPrimitiveRoot.iff_def ζ n).mp h).1]
     ring
   have non_zero : Polynomial.eval (ζ^i) (cyclo 1) ≠ 0 := by sorry
   rw [← P_cyclo] at is_zero
   sorry
-
 
 
 -- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
