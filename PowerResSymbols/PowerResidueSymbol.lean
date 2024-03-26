@@ -1,5 +1,7 @@
 import Mathlib.NumberTheory.Cyclotomic.Basic
 import Mathlib.RingTheory.Ideal.Norm
+import Mathlib.Algebra.GeomSum
+import Mathlib.Data.Polynomial.Basic
 
 open scoped NumberField BigOperators
 
@@ -56,13 +58,21 @@ lemma l3 : Fintype.card ((ResidueFieldAtPrime2 p hp hp2)ˣ ) = ((Ideal.absNorm p
 lemma n_not_zero (hpn : IsCoprime n (Ideal.absNorm p)) : (residue_map2 p hp hp2) n ≠ 0 := by
   sorry
 
-def cyclo : Polynomial (𝓞 F) := (Polynomial.X ^n) - (Polynomial.C 1)
+abbrev cyclo (m : ℕ) : Polynomial ℤ := (Polynomial.X ^m) - (Polynomial.C 1)
 
-def P : Polynomial (𝓞 F) := sorry
+abbrev cyclom1  (m : ℕ): Polynomial ℤ :=
+  Finset.sum (Finset.range m) fun (i : ℕ) => Polynomial.X ^ i
 
 lemma P1 : Polynomial.eval 1 P = (n : 𝓞 F) := by sorry
 
-lemma P_cyclo : P * (cyclo 1) = (cyclo n) := by sorry
+lemma P_cyclo : (cyclom1 n) * (cyclo 1) = (cyclo n) := by
+  rw [cyclo,cyclom1,cyclo]
+  sorry
+  -- have : Polynomial.X (R:= ℤ) ≠ 1 := by
+  --   exact Polynomial.X_ne
+
+
+  -- rw [geom_sum_eq]
 
 lemma Pzeta (i : ℕ): ¬ (n ∣ i) → Polynomial.eval (ζ^i) P = 0 := by sorry
 -- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
