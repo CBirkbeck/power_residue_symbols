@@ -56,17 +56,30 @@ lemma l3 : Fintype.card ( (ResidueFieldAtPrime2 p hp hp2)ˣ ) = ((Ideal.absNorm 
 
 -- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
 lemma injectivity (hpn : IsCoprime n (Ideal.absNorm p)) :
-  ζ^i-1 ∈ p ↔ n ∣ i := by sorry
+  ∀ (i : ℕ), ζ^i-1 ∈ p ↔ n ∣ i := by
+  sorry
+
 
 lemma primitivemodp (hpn : IsCoprime n (Ideal.absNorm p)) :
-  IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by sorry
+  IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by
+    rw [IsPrimitiveRoot.iff_def]
+    constructor
+    . calc (residue_map2 p hp hp2) ζ ^ n = (residue_map2 p hp hp2) (ζ^n) := by exact rfl
+                _ = (residue_map2 p hp hp2) 1 := by rw [((IsPrimitiveRoot.iff_def ζ n).mp h).1]
+                _ = 1 := by exact rfl
+    intro i hi
+    rw [← injectivity ζ n p hpn i]
+    have : (residue_map2 p hp hp2) ζ^i = (residue_map2 p hp hp2 (ζ^i)) := rfl
+    rw [this] at hi
+    rw [← Ideal.Quotient.eq,hi]
+    exact rfl
 
--- show that we have a group homomorphism from the n-th roots of unity to the units of the residue field
+
+
 
 -- deduce the divisibility result
 lemma norm_div_lemmas (hpn : p ⊔ Ideal.span ({(n : (𝓞 F))} : Set (𝓞 F)) = ⊤) : n  ∣ ((Ideal.absNorm p) - 1) := by
     rw [← l3 p hp hp2]
-    rw?
     sorry
 
 lemma exits_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
