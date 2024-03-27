@@ -70,6 +70,8 @@ lemma n_not_zero (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : (residue_map2 p
   ring_nf at nquot
   exact zero_ne_one nquot
 
+
+/-
 abbrev cyclo (m : ℕ) : Polynomial ℤ := (Polynomial.X ^m) - (Polynomial.C 1)
 
 abbrev cyclom1  (m : ℕ): Polynomial ℤ :=
@@ -118,11 +120,11 @@ lemma Pzeta (i : ℕ):
     exact non_zero h2
 
 
+-/
 
 
 
-
-
+/-
 -- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
 lemma injectivity (hpn : IsCoprime (n : ℤ) (Ideal.absNorm p)) :
   ∀ (i : ℕ), ζ^i-1 ∈ p ↔ n ∣ i := by
@@ -150,6 +152,8 @@ lemma injectivity (hpn : IsCoprime (n : ℤ) (Ideal.absNorm p)) :
   exact Ideal.zero_mem p
 
 #check injectivity
+-/
+
 
 lemma primitivemodp' (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by
@@ -161,6 +165,8 @@ lemma primitivemodp' (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   simp at *
   exact h1
 
+
+/-
 lemma primitivemodp (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by
     rw [IsPrimitiveRoot.iff_def]
@@ -174,19 +180,28 @@ lemma primitivemodp (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
     rw [this] at hi
     rw [← Ideal.Quotient.eq,hi]
     exact rfl
+-/
 
 lemma isunit : IsUnit ((residue_map2 p hp hp2) ζ) :=
-  IsUnit.map (residue_map2 p hp hp2) (IsPrimitiveRoot.isUnit h hn)
+  IsUnit.map (residue_map2 p hp hp2) (IsPrimitiveRoot.isUnit h n.2)
+
+#check IsUnit.unit (isunit ζ n h p hp hp2)
 
 -- deduce the divisibility result
-lemma norm_div_lemmas (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : (n : ℕ)  ∣ ((Ideal.absNorm p) - 1) := by
-    rw [← l3 p hp hp2]
-    have divide : orderOf ((residue_map2 p hp hp2) ζ) ∣ Fintype.card ((ResidueFieldAtPrime2 p hp hp2)ˣ)  := by
-      have := orderOf_dvd_card (G := (ResidueFieldAtPrime2 p hp hp2)ˣ) (x := ⟨ (residue_map2 p hp hp2) ζ, isunit⟩ )
-      sorry
-    have := IsPrimitiveRoot.eq_orderOf (primitivemodp ζ n h p hp hp2 hpn)
-    rw [← this] at divide
-    exact divide
+lemma norm_div_lemmas (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
+    (n : ℕ)  ∣ ((Ideal.absNorm p) - 1) := by
+  rw [← l3 p hp hp2]
+  have divide := orderOf_dvd_card (G := (ResidueFieldAtPrime2 p hp hp2)ˣ)
+        (x := IsUnit.unit (isunit ζ n h p hp hp2)  )
+  convert divide
+  have ht : IsPrimitiveRoot (IsUnit.unit (isunit ζ n h p hp hp2)) n := by
+    have := (primitivemodp' ζ n h p hp hp2 hpn)
+    rw [ ← IsPrimitiveRoot.coe_units_iff]
+    simp [this]
+  have := IsPrimitiveRoot.eq_orderOf ht
+  simp at *
+  rw [this]
+
 
 
 lemma exits_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
