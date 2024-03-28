@@ -256,6 +256,26 @@ lemma pow2 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+)  (a : R) (u : Rˣ)
 --def powerResidueSymbol (a : 𝓞 F) (r : Ideal (𝓞 F)): ResidueRingAtIdeal r  :=
 
 
-lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
-    (hpn : p ⊔ Ideal.span ({(n * a : (𝓞 F))} : Set (𝓞 F)) = ⊤) :
-  ∃! (i : ℕ), (a ^ (((Ideal.absNorm p) - 1) / n)) -  ζ^i ∈ p := by sorry
+lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
+   (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
+  ∃! (η : rootsOfUnity n (𝓞 F)ˣ) , (a ^ (((Ideal.absNorm p) - 1) / n)) -  η.1.1  ∈ p := by
+
+  have h0 : (residue_map2 p hp hp2) (a ^ (((Ideal.absNorm p) - 1) / n))^ (n : ℕ) = 1 := by sorry
+  have := IsPrimitiveRoot.eq_pow_of_pow_eq_one (primitivemodp' ζ n h p hp hp2 hpn) h0 n.2
+  obtain ⟨i, hi1, hi2⟩ := this
+  let t := IsUnit.unit (IsPrimitiveRoot.isUnit h n.2)
+  have hy : (t^i)^(n : ℕ) = 1 := by sorry
+  let z := rootsOfUnity.mkOfPowEq (t^i) hy
+  use z
+  simp
+  constructor
+  rw [← Ideal.Quotient.mk_eq_mk_iff_sub_mem]
+  sorry
+  sorry
+
+
+
+
+def powerResidueSymbol (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
+  (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : rootsOfUnity n (𝓞 F)ˣ := by
+  use! Classical.choose  (exists_pth_root ζ n h a p hp hp2 hpn)
