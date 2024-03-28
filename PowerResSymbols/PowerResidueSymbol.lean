@@ -269,9 +269,8 @@ lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (
   have h0 : (residue_map2 p hp hp2) (a ^ (((Ideal.absNorm p) - 1) / n))^ (n : ℕ) = 1 := by sorry
   have := IsPrimitiveRoot.eq_pow_of_pow_eq_one (primitivemodp' ζ n h p hp hp2 hpn) h0 n.2
   obtain ⟨i, hi1, hi2⟩ := this
-  let t := IsUnit.unit (IsPrimitiveRoot.isUnit h n.2)
-  have hy : (t^i)^(n : ℕ) = 1 := by sorry
-  let z := rootsOfUnity.mkOfPowEq (t^i) hy
+  have hy : (ζ^i)^(n : ℕ) = 1 := by sorry
+  let z := rootsOfUnity.mkOfPowEq (ζ^i) hy
   use z
   simp
   constructor
@@ -280,7 +279,7 @@ lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (
   intro b hb hb2
   rw [← Ideal.Quotient.mk_eq_mk_iff_sub_mem] at hb2
   rw [← hi2] at hb2
-  simp [z, t]
+  simp [z]
 
   sorry
 
@@ -288,5 +287,5 @@ lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (
 
 
 def powerResidueSymbol (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
-  (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : rootsOfUnity n (𝓞 F)ˣ := by
-  use! Classical.choose  (exists_pth_root ζ n h a p hp hp2 hpn)
+  (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : rootsOfUnity n (𝓞 F)ˣ :=
+   Classical.choose  (exists_pth_root ζ n h a p hp hp2 hpn)
