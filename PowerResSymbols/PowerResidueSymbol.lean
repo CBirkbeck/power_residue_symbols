@@ -3,10 +3,11 @@ import Mathlib.RingTheory.Ideal.Norm
 import Mathlib.Algebra.GeomSum
 import Mathlib.Data.Polynomial.Basic
 import Mathlib.Algebra.GroupWithZero.NonZeroDivisors
+import Mathlib.Algebra.Group.Commute.Units
 
 open scoped NumberField BigOperators
 
-variable {F : Type*} [Field F] [NumberField F] (ζ : 𝓞 F) (n : ℕ+) (h : IsPrimitiveRoot ζ n)
+variable {F : Type*} [Field F] [NumberField F] (ζ : (𝓞 F)ˣ) (n : ℕ+) (h : IsPrimitiveRoot ζ n)
 variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)  (r : Ideal (𝓞 F))
 
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
@@ -179,8 +180,9 @@ lemma primitivemodp' (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
     have := n_not_zero  n p hp hp2 hpn
     rw [neZero_iff]
     exact this
+  rw [← IsPrimitiveRoot.coe_units_iff] at h
   rw [← Polynomial.isRoot_cyclotomic_iff] at *
-  have h1 := Polynomial.IsRoot.map   (x := ζ) (f := residue_map2 p hp hp2) h
+  have h1 := Polynomial.IsRoot.map (x := ζ) (f := residue_map2 p hp hp2) h
   simp at *
   exact h1
 
@@ -201,8 +203,9 @@ lemma primitivemodp (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
     exact rfl
 -/
 
-lemma isunit : IsUnit ((residue_map2 p hp hp2) ζ) :=
-  IsUnit.map (residue_map2 p hp hp2) (IsPrimitiveRoot.isUnit h n.2)
+lemma isunit : IsUnit ((residue_map2 p hp hp2) ζ) := by
+  rw [← IsPrimitiveRoot.coe_units_iff] at h
+  exact IsUnit.map (residue_map2 p hp hp2) (IsPrimitiveRoot.isUnit h n.2)
 
 
 -- deduce the divisibility result
@@ -225,8 +228,11 @@ this should help for the lemma
 should we assume ζ to be a unit at the beginning? it would make things easier
 -/
 
-lemma root_is_unit {R : Type*} [CommRing R] (a : R) (k : ℕ+)   (ha : a^k.val = 1) :
-  IsUnit a := by sorry
+lemma root_is_unit
+{R : Type*} [CommRing R] (a : R) (k : ℕ+) (ha : a^(k : ℕ) = 1) : IsUnit a := by
+  rw [← isUnit_pow_iff (n := k)]
+  simp [ha]
+  simp
 
 lemma pow1 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+) (a : Rˣ) (u : Rˣ)
   (hu : IsPrimitiveRoot u k) (ha : a^k.val = 1) :
@@ -246,7 +252,7 @@ lemma pow2 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+)  (a : R) (u : Rˣ)
   (hu : IsPrimitiveRoot u k) (ha : a^k.val = 1) :
   ∃ (i : ℤ), ↑(u^i)  = a := by
   have a_unit := root_is_unit a k  ha
-  have ha' : (IsUnit.unit a_unit)^k.val = 1 := by sorry
+  have ha' : (IsUnit.unit a_unit)^k.val = 1 := by aesop
   rcases pow1 k (IsUnit.unit a_unit) u hu ha' with ⟨i, hi⟩
   use i
   rw_mod_cast [hi]
