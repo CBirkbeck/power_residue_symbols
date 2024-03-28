@@ -7,11 +7,14 @@ import Mathlib.Algebra.GroupWithZero.NonZeroDivisors
 open scoped NumberField BigOperators
 
 variable {F : Type*} [Field F] [NumberField F] (ζ : 𝓞 F) (n : ℕ+) (h : IsPrimitiveRoot ζ n)
-variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
+variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)  (r : Ideal (𝓞 F))
 
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
 abbrev ResidueFieldAtPrime (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥) :=
   LocalRing.ResidueField (Localization.AtPrime p)
+
+/--The residue field of a number field (specifically the ring of intergers) at a prime-/
+abbrev ResidueRingAtIdeal := 𝓞 F ⧸ r
 
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
 abbrev ResidueFieldAtPrime2 (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥) := 𝓞 F ⧸ p
@@ -25,22 +28,36 @@ noncomputable section
 -- noncomputable instance : CommRing (ResidueFieldAtPrime2 p) := by
 --   apply Ideal.Quotient.commRing
 
+noncomputable instance : Field (ResidueRingAtIdeal p) := by
+  have h : Ideal.IsMaximal p := by
+    apply Ideal.IsPrime.isMaximal hp hp2
+  apply Ideal.Quotient.field
+
+noncomputable instance : CommRing (ResidueRingAtIdeal r) := by
+  apply Ideal.Quotient.commRing
 
 noncomputable instance : Field (ResidueFieldAtPrime2 p hp hp2) := by
   have h : Ideal.IsMaximal p := by
     apply Ideal.IsPrime.isMaximal hp hp2
   apply Ideal.Quotient.field
 
-
-
-
 abbrev residue_map : 𝓞 F →+* (ResidueFieldAtPrime p hp hp2) :=
   (LocalRing.residue (Localization.AtPrime p)).comp (algebraMap (𝓞 F) (Localization.AtPrime p))
 
+abbrev residue_map_at_ideal (n : Ideal (𝓞 F)) : 𝓞 F →+* (ResidueRingAtIdeal n) := Ideal.Quotient.mk n
 
 abbrev residue_map2 : 𝓞 F →+* (ResidueFieldAtPrime2 p hp hp2) := Ideal.Quotient.mk p
 
+instance  : Fintype (ResidueRingAtIdeal p) := Ideal.fintypeQuotientOfFreeOfNeBot p hp2
+
 instance as : Fintype (ResidueFieldAtPrime2 p hp hp2) := Ideal.fintypeQuotientOfFreeOfNeBot p hp2
+
+
+lemma l0  : Fintype.card (ResidueRingAtIdeal p) = Ideal.absNorm p := by
+  rw [@Ideal.absNorm_apply]
+  symm
+  convert Submodule.cardQuot_apply _
+
 
 lemma l1 : Fintype.card (ResidueFieldAtPrime2 p hp hp2) = Ideal.absNorm p := by
   rw [@Ideal.absNorm_apply]
@@ -159,7 +176,8 @@ lemma primitivemodp' (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by
   haveI  : NeZero (n : ResidueFieldAtPrime2 p hp hp2) := by
     have := n_not_zero  n p hp hp2 hpn
-    sorry
+    rw [neZero_iff]
+    exact this
   rw [← Polynomial.isRoot_cyclotomic_iff] at *
   have h1 := Polynomial.IsRoot.map   (x := ζ) (f := residue_map2 p hp hp2) h
   simp at *
@@ -185,7 +203,6 @@ lemma primitivemodp (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
 lemma isunit : IsUnit ((residue_map2 p hp hp2) ζ) :=
   IsUnit.map (residue_map2 p hp hp2) (IsPrimitiveRoot.isUnit h n.2)
 
-#check IsUnit.unit (isunit ζ n h p hp hp2)
 
 -- deduce the divisibility result
 lemma norm_div_lemmas (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
@@ -234,6 +251,8 @@ lemma pow2 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+)  (a : R) (u : Rˣ)
   rw_mod_cast [hi]
   simp
 
+
+--def powerResidueSymbol (a : 𝓞 F) (p : Ideal (𝓞 F)):= sorry
 
 lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
     (hpn : p ⊔ Ideal.span ({(n * a : (𝓞 F))} : Set (𝓞 F)) = ⊤) :
