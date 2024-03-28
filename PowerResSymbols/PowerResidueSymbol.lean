@@ -252,7 +252,7 @@ lemma pow2 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+)  (a : R) (u : Rˣ)
   (hu : IsPrimitiveRoot u k) (ha : a^k.val = 1) :
   ∃ (i : ℤ), ↑(u^i)  = a := by
   have a_unit := root_is_unit a k  ha
-  have ha' : (IsUnit.unit a_unit)^k.val = 1 := by sorry
+  have ha' : (IsUnit.unit a_unit)^k.val = 1 := by aesop
   rcases pow1 k (IsUnit.unit a_unit) u hu ha' with ⟨i, hi⟩
   use i
   rw_mod_cast [hi]
