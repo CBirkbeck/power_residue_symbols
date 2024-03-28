@@ -261,6 +261,12 @@ lemma pow2 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+)  (a : R) (u : Rˣ)
 
 --def powerResidueSymbol (a : 𝓞 F) (r : Ideal (𝓞 F)): ResidueRingAtIdeal r  :=
 
+def bij_nth_roots (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
+   (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
+   rootsOfUnity n (𝓞 F) ≃ rootsOfUnity n (ResidueFieldAtPrime2 p hp hp2) := sorry
+
+#check bij_nth_roots
+
 
 lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
    (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
