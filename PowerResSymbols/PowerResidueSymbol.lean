@@ -159,7 +159,8 @@ lemma primitivemodp' (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by
   haveI  : NeZero (n : ResidueFieldAtPrime2 p hp hp2) := by
     have := n_not_zero  n p hp hp2 hpn
-    sorry
+    rw [neZero_iff]
+    exact this
   rw [← Polynomial.isRoot_cyclotomic_iff] at *
   have h1 := Polynomial.IsRoot.map   (x := ζ) (f := residue_map2 p hp hp2) h
   simp at *
@@ -234,7 +235,16 @@ lemma pow2 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+)  (a : R) (u : Rˣ)
   rw_mod_cast [hi]
   simp
 
+lemma pow_card {R : Type*} [CommRing R] [Fintype R] (a : Rˣ) :
+  a ^ (Fintype.card Rˣ) = 1 := by
+  have divide := orderOf_dvd_card (G := Rˣ) (x := a )
+  have pow1 := pow_orderOf_eq_one a
+  rcases divide with ⟨ m, hm⟩
+  rw [hm]
+  have : a ^(orderOf a * m) = (a^(orderOf a))^m := by group
+  rw [this,pow1]
+  group
 
-lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
-    (hpn : p ⊔ Ideal.span ({(n * a : (𝓞 F))} : Set (𝓞 F)) = ⊤) :
-  ∃! (i : ℕ), (a ^ (((Ideal.absNorm p) - 1) / n)) -  ζ^i ∈ p := by sorry
+lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 : p ≠ ⊥)
+    (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
+  a ≠ 0 → ∃ (i : ℕ), (a ^ (((Ideal.absNorm p) - 1) / n)) -  ζ^i ∈ p := by sorry
