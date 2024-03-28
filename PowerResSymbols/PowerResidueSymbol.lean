@@ -202,8 +202,39 @@ lemma norm_div_lemmas (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   simp at *
   rw [this]
 
+/-
+this should help for the lemma
+should we assume ζ to be a unit at the beginning? it would make things easier
+-/
+
+lemma root_is_unit {R : Type*} [CommRing R] (a : R) (k : ℕ+)   (ha : a^k.val = 1) :
+  IsUnit a := by sorry
+
+lemma pow1 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+) (a : Rˣ) (u : Rˣ)
+  (hu : IsPrimitiveRoot u k) (ha : a^k.val = 1) :
+   ∃ (i : ℤ), u^i = a := by
+  have : a ∈ Subgroup.zpowers u := by
+    have pow_u := IsPrimitiveRoot.zpowers_eq hu
+    have a_root : a ∈ rootsOfUnity k R := by
+      rw [← mem_rootsOfUnity] at ha
+      exact ha
+    rw [pow_u]
+    assumption
+  rw [Subgroup.mem_zpowers_iff] at this
+  rcases this with ⟨ i, hi⟩
+  use i
+
+lemma pow2 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+)  (a : R) (u : Rˣ)
+  (hu : IsPrimitiveRoot u k) (ha : a^k.val = 1) :
+  ∃ (i : ℤ), ↑(u^i)  = a := by
+  have a_unit := root_is_unit a k  ha
+  have ha' : (IsUnit.unit a_unit)^k.val = 1 := by sorry
+  rcases pow1 k (IsUnit.unit a_unit) u hu ha' with ⟨i, hi⟩
+  use i
+  rw_mod_cast [hi]
+  simp
 
 
-lemma exits_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
+lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
     (hpn : p ⊔ Ideal.span ({(n * a : (𝓞 F))} : Set (𝓞 F)) = ⊤) :
   ∃! (i : ℕ), (a ^ (((Ideal.absNorm p) - 1) / n)) -  ζ^i ∈ p := by sorry
