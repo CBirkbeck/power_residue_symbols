@@ -20,6 +20,7 @@ abbrev ResidueRingAtIdeal := 𝓞 F ⧸ r
 /--The residue field of a number field (specifically the ring of intergers) at a prime-/
 abbrev ResidueFieldAtPrime2 (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥) := 𝓞 F ⧸ p
 
+--local notation "𝓞Fp" => (ResidueFieldAtPrime p hp hp2)
 noncomputable section
 
 
@@ -42,7 +43,7 @@ noncomputable instance : Field (ResidueFieldAtPrime2 p hp hp2) := by
     apply Ideal.IsPrime.isMaximal hp hp2
   apply Ideal.Quotient.field
 
-abbrev residue_map : 𝓞 F →+* (ResidueFieldAtPrime p hp hp2) :=
+abbrev residue_map : 𝓞 F →+* ResidueFieldAtPrime p hp hp2 :=
   (LocalRing.residue (Localization.AtPrime p)).comp (algebraMap (𝓞 F) (Localization.AtPrime p))
 
 abbrev residue_map_at_ideal (n : Ideal (𝓞 F)) : 𝓞 F →+* (ResidueRingAtIdeal n) := Ideal.Quotient.mk n
@@ -183,7 +184,7 @@ lemma primitivemodp' (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   rw [← IsPrimitiveRoot.coe_units_iff] at h
   rw [← Polynomial.isRoot_cyclotomic_iff] at *
   have h1 := Polynomial.IsRoot.map (x := ζ) (f := residue_map2 p hp hp2) h
-  simp at *
+  simp only [Polynomial.IsRoot.definition, Polynomial.map_cyclotomic] at *
   exact h1
 
 
@@ -218,9 +219,9 @@ lemma norm_div_lemmas (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   have ht : IsPrimitiveRoot (IsUnit.unit (isunit ζ n h p hp hp2)) n := by
     have := (primitivemodp' ζ n h p hp hp2 hpn)
     rw [ ← IsPrimitiveRoot.coe_units_iff]
-    simp [this]
+    simp only [IsUnit.unit_spec, this]
   have := IsPrimitiveRoot.eq_orderOf ht
-  simp at *
+  simp only at *
   rw [this]
 
 /-
@@ -231,8 +232,7 @@ should we assume ζ to be a unit at the beginning? it would make things easier
 lemma root_is_unit
 {R : Type*} [CommRing R] (a : R) (k : ℕ+) (ha : a^(k : ℕ) = 1) : IsUnit a := by
   rw [← isUnit_pow_iff (n := k)]
-  simp [ha]
-  simp
+  simp only [ha, isUnit_one,ne_eq, PNat.ne_zero, not_false_eq_true]
 
 lemma pow1 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+) (a : Rˣ) (u : Rˣ)
   (hu : IsPrimitiveRoot u k) (ha : a^k.val = 1) :
@@ -256,7 +256,7 @@ lemma pow2 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+)  (a : R) (u : Rˣ)
   rcases pow1 k (IsUnit.unit a_unit) u hu ha' with ⟨i, hi⟩
   use i
   rw_mod_cast [hi]
-  simp
+  simp only [IsUnit.unit_spec]
 
 
 --def powerResidueSymbol (a : 𝓞 F) (r : Ideal (𝓞 F)): ResidueRingAtIdeal r  :=
@@ -267,20 +267,30 @@ def bij_nth_roots (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
 
 #check bij_nth_roots
 
+set_option profiler true in
+set_option trace.profiler true in
+lemma exists_pth_root (a : 𝓞 F) -- (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 : p ≠ ⊥)
+    (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) (hpa : a ∉ p) :
+  ∃! η : rootsOfUnity n (𝓞 F)ˣ, a ^ ((Ideal.absNorm p - 1) / n) -  η.1.1  ∈ p := by
 
-lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
-   (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
-  ∃! (η : rootsOfUnity n (𝓞 F)ˣ) , (a ^ (((Ideal.absNorm p) - 1) / n)) -  η.1.1  ∈ p := by
-
-  have h0 : (residue_map2 p hp hp2) (a ^ (((Ideal.absNorm p) - 1) / n))^ (n : ℕ) = 1 := by sorry
+  have h0 : residue_map2 p hp hp2 (a ^ ((Ideal.absNorm p - 1) / n))^ (n : ℕ) = 1 := by
+    rw [RingHom.map_pow, ← pow_mul, Nat.div_mul_cancel (norm_div_lemmas ζ n h p hp hp2 hpn)]
+    have : IsUnit (M := ResidueFieldAtPrime2 p hp hp2) <| residue_map2 p hp hp2 a := by
+      rw [isUnit_iff_ne_zero]
+      simp only [ne_eq, Ideal.Quotient.eq_zero_iff_mem, hpa, not_false_eq_true]
+    lift (residue_map2 p hp hp2 a) to (ResidueFieldAtPrime2 p hp hp2)ˣ using this with y
+    rw [← l1 _ hp hp2]
+    norm_cast
+    rw [@Units.val_eq_one]
+    rw [(FiniteField.forall_pow_eq_one_iff _ _).mpr dvd_rfl]
   have := IsPrimitiveRoot.eq_pow_of_pow_eq_one (primitivemodp' ζ n h p hp hp2 hpn) h0 n.2
   obtain ⟨i, hi1, hi2⟩ := this
   have hy : (ζ^i)^(n : ℕ) = 1 := by
     have : (ζ^i)^(n : ℕ) = (ζ^(n : ℕ))^i := by group
-    simp [this,((IsPrimitiveRoot.iff_def ζ n).mp h).1]
+    simp only [this, ((IsPrimitiveRoot.iff_def ζ n).mp h).1, one_pow]
   let z := rootsOfUnity.mkOfPowEq (ζ^i) hy
   use z
-  simp
+  simp only [Subtype.forall, mem_rootsOfUnity]
   constructor
   rw [← Ideal.Quotient.mk_eq_mk_iff_sub_mem]
   convert hi2.symm
