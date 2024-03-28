@@ -48,12 +48,13 @@ abbrev residue_map_at_ideal (n : Ideal (𝓞 F)) : 𝓞 F →+* (ResidueRingAtId
 
 abbrev residue_map2 : 𝓞 F →+* (ResidueFieldAtPrime2 p hp hp2) := Ideal.Quotient.mk p
 
-instance  : Fintype (ResidueRingAtIdeal p) := Ideal.fintypeQuotientOfFreeOfNeBot p hp2
+instance [hp2 : Fact (p ≠ ⊥)]   : Fintype (ResidueRingAtIdeal p) :=
+  Ideal.fintypeQuotientOfFreeOfNeBot p hp2.out
 
 instance as : Fintype (ResidueFieldAtPrime2 p hp hp2) := Ideal.fintypeQuotientOfFreeOfNeBot p hp2
 
 
-lemma l0  : Fintype.card (ResidueRingAtIdeal p) = Ideal.absNorm p := by
+lemma l0  [Fact (p ≠ ⊥)] : Fintype.card (ResidueRingAtIdeal p) = Ideal.absNorm p := by
   rw [@Ideal.absNorm_apply]
   symm
   convert Submodule.cardQuot_apply _
@@ -252,7 +253,8 @@ lemma pow2 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+)  (a : R) (u : Rˣ)
   simp
 
 
---def powerResidueSymbol (a : 𝓞 F) (p : Ideal (𝓞 F)):= sorry
+--def powerResidueSymbol (a : 𝓞 F) (r : Ideal (𝓞 F)): ResidueRingAtIdeal r  :=
+
 
 lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p)
     (hpn : p ⊔ Ideal.span ({(n * a : (𝓞 F))} : Set (𝓞 F)) = ⊤) :
