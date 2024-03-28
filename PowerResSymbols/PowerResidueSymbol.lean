@@ -270,7 +270,12 @@ lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (
   simp
   constructor
   rw [← Ideal.Quotient.mk_eq_mk_iff_sub_mem]
-  sorry
+  convert hi2.symm
+  intro b hb hb2
+  rw [← Ideal.Quotient.mk_eq_mk_iff_sub_mem] at hb2
+  rw [← hi2] at hb2
+  simp [z, t]
+
   sorry
 
 
