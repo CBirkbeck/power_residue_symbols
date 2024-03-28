@@ -275,7 +275,9 @@ lemma exists_pth_root (a : 𝓞 F) (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (
   have h0 : (residue_map2 p hp hp2) (a ^ (((Ideal.absNorm p) - 1) / n))^ (n : ℕ) = 1 := by sorry
   have := IsPrimitiveRoot.eq_pow_of_pow_eq_one (primitivemodp' ζ n h p hp hp2 hpn) h0 n.2
   obtain ⟨i, hi1, hi2⟩ := this
-  have hy : (ζ^i)^(n : ℕ) = 1 := by sorry
+  have hy : (ζ^i)^(n : ℕ) = 1 := by
+    have : (ζ^i)^(n : ℕ) = (ζ^(n : ℕ))^i := by group
+    simp [this,((IsPrimitiveRoot.iff_def ζ n).mp h).1]
   let z := rootsOfUnity.mkOfPowEq (ζ^i) hy
   use z
   simp
