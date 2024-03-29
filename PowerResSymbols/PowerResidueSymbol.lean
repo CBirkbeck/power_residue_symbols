@@ -233,6 +233,7 @@ lemma root_is_unit
 {R : Type*} [CommRing R] (a : R) (k : ℕ+) (ha : a^(k : ℕ) = 1) : IsUnit a := by
   rw [← isUnit_pow_iff (n := k)]
   simp only [ha, isUnit_one,ne_eq, PNat.ne_zero, not_false_eq_true]
+  linarith [k.pos]
 
 lemma pow1 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+) (a : Rˣ) (u : Rˣ)
   (hu : IsPrimitiveRoot u k) (ha : a^k.val = 1) :
@@ -298,6 +299,7 @@ lemma exists_pth_root (a : 𝓞 F) -- (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p
   rw [← Ideal.Quotient.mk_eq_mk_iff_sub_mem] at hb2
   rw [← hi2] at hb2
   simp [z]
+
 
   sorry
 
