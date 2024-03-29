@@ -27,20 +27,16 @@ lemma toFull {n : ℕ+} (f : R →+* S) (hR : fullRoots n R) (hf : nice n f) :
   exact hf u hu
 
 lemma isNice {n : ℕ+} (f : R →+* S) [IsDomain R] [IsDomain S] (hn : (n : S) ≠ 0) : nice n f := by
-  haveI : NeZero (n : S) := by
+  haveI neZero : NeZero (n : S) := by
     rw [neZero_iff]
     exact hn
   intro u hu
   have rootR := IsPrimitiveRoot.isRoot_cyclotomic n.pos hu
   rw [← Polynomial.isRoot_cyclotomic_iff]
-  -- have rootS := Polynomial.IsRoot.map this
-  sorry
-/-
-  have h1 := Polynomial.IsRoot.map (x := ζ) (f := residue_map2 p hp hp2) h
+  have rootS := @Polynomial.IsRoot.map R S _ _ f u _ rootR
   simp only [Polynomial.IsRoot.definition, Polynomial.map_cyclotomic] at *
-  exact h1
+  exact rootS
 
--/
 
 -- unit, nonunit, coercion
 
@@ -67,8 +63,8 @@ Fintype ↥(rootsOfUnity n R) := rootsOfUnity.fintype R n
 
 #check finn
 
---lemma cardFull (n : ℕ+) {R : Type*} [CommRing R] [IsDomain R] (hn : fullRoots n R) :
---  Finset.card ↥(rootsOfUnity n R) = n.val := by sorry
+lemma cardFull (n : ℕ+) {R : Type*} [CommRing R] [IsDomain R] (hn : fullRoots n R) :
+  Fintype.card ↥(rootsOfUnity n R) = n.val := by sorry
 
 -- map from roots of unity
 
