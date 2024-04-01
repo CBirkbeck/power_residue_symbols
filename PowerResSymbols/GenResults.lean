@@ -5,7 +5,6 @@ import Mathlib.Data.Polynomial.Basic
 import Mathlib.Algebra.GroupWithZero.NonZeroDivisors
 import Mathlib.Algebra.Group.Commute.Units
 
-open scoped NumberField BigOperators
 open scoped Classical
 
 section Preliminaries
@@ -20,6 +19,29 @@ def fullRoots (n : ℕ+) (R : Type*) [CommRing R] : Prop :=
 def nice (n : ℕ+) (f : R →+*S) : Prop :=
   ∀ (a : R), IsPrimitiveRoot a n → IsPrimitiveRoot (f a) n
 
+-- various coercions
+
+noncomputable def unit_from_primitive {n : ℕ+} {u : R} (hu : IsPrimitiveRoot u n) : Rˣ :=
+  IsUnit.unit (IsPrimitiveRoot.isUnit hu n.2)
+
+lemma prim_is_prim {n : ℕ+} {u : R} (hu : IsPrimitiveRoot u n) :
+  IsPrimitiveRoot (unit_from_primitive hu) n :=
+  IsPrimitiveRoot.isUnit_unit n.pos hu
+
+def nth_root_from_primitive {n : ℕ+} {u : R} (hu : IsPrimitiveRoot u n) :
+  rootsOfUnity n R := IsPrimitiveRoot.toRootsOfUnity hu
+
+lemma is_nth_root {n : ℕ+} {u : R} (hu : IsPrimitiveRoot u n) :
+  unit_from_primitive hu ∈ rootsOfUnity n R := by
+  simp [unit_from_primitive]
+  rw [← Units.eq_iff]
+  simp
+  exact hu.pow_eq_one
+
+
+
+-- morphisms and primitive roots
+
 lemma toFull {n : ℕ+} {f : R →+* S} (hR : fullRoots n R) (hf : nice n f) :
   fullRoots n S := by
   rcases hR with ⟨ u, hu⟩
@@ -27,7 +49,7 @@ lemma toFull {n : ℕ+} {f : R →+* S} (hR : fullRoots n R) (hf : nice n f) :
   exact hf u hu
 
 lemma isNice {n : ℕ+} (f : R →+* S) [IsDomain R] [IsDomain S] (hn : (n : S) ≠ 0) : nice n f := by
-  haveI neZero : NeZero (n : S) := by
+  haveI instNeZero : NeZero (n : S) := by
     rw [neZero_iff]
     exact hn
   intro u hu
@@ -38,20 +60,7 @@ lemma isNice {n : ℕ+} (f : R →+* S) [IsDomain R] [IsDomain S] (hn : (n : S) 
   exact rootS
 
 
--- unit, nonunit, coercion
-
-noncomputable def unit_from_primitive {n : ℕ+} {u : R} (hu : IsPrimitiveRoot u n) : Rˣ :=
-  IsUnit.unit (IsPrimitiveRoot.isUnit hu n.2)
-
-lemma prim_is_prim {n : ℕ+} {u : R} (hu : IsPrimitiveRoot u n) :
-  IsPrimitiveRoot (unit_from_primitive hu) n := by sorry
-
-def nth_root_from_primitive {n : ℕ+} {u : R} (hu : IsPrimitiveRoot u n) :
-  rootsOfUnity n R := IsPrimitiveRoot.toRootsOfUnity hu
-
 -- cardinality
-
--- IsPrimitiveRoot.injOn_pow_mul
 
 noncomputable instance (R : Type*)  (n : ℕ+)  [CommRing R]  [IsDomain R] :
 Fintype ↥(rootsOfUnity n R) := rootsOfUnity.fintype R n
@@ -60,11 +69,8 @@ Fintype ↥(rootsOfUnity n R) := rootsOfUnity.fintype R n
 
 lemma cardFull (n : ℕ+) {R : Type*} [CommRing R] [IsDomain R] (hn : fullRoots n R) :
   Fintype.card ↥(rootsOfUnity n R) = n.val := by
-    have less := card_rootsOfUnity R n
     rcases hn with ⟨ u, hu⟩
-    have order := IsPrimitiveRoot.eq_orderOf hu
-    have equal := IsPrimitiveRoot.zpowers_eq (prim_is_prim hu)
-    sorry
+    exact IsPrimitiveRoot.card_rootsOfUnity hu
 
 -- map from roots of unity
 
@@ -74,26 +80,46 @@ def nth_root_map (n : ℕ+) (f : R →+* S) :
 
 -- properties of this map
 
-lemma nth_root_map_surj {n : ℕ+} {f : R →+* S} [IsDomain S]
-  (hR : fullRoots n R) (hf : nice n f):
-  Function.Surjective (nth_root_map n f) := by
+
+lemma image_nth_root_map {n : ℕ+} {f : R →+* S} [IsDomain S]
+  (hR : fullRoots n R) (hf : nice n f) :
+  ∀ (a : Sˣ), a ∈ rootsOfUnity n S → ∃ (b : Rˣ), (Units.map f) b = a ∧ b ∈ rootsOfUnity n R := by
+    intro a ha
     rcases hR with ⟨ u, hu⟩
     have prim : IsPrimitiveRoot (f u) n := by
       exact hf u hu
+    have eq0 : Units.val ((Units.map f) (unit_from_primitive hu)) = ((unit_from_primitive prim):S) := by
+      simp [unit_from_primitive]
+    have eq1 : (Units.map f) (unit_from_primitive hu) = (unit_from_primitive prim) := by
+      rw [← Units.eq_iff]
+      exact eq0
     have prim' : IsPrimitiveRoot (unit_from_primitive prim) n := by
-      rw [←IsPrimitiveRoot.coe_units_iff]
-      sorry
+      exact prim_is_prim prim
+    have pow_fu := IsPrimitiveRoot.zpowers_eq prim'
+    rw [← pow_fu,← eq1] at ha
+    have := @MonoidHom.map_zpowers Rˣ _ Sˣ _ (Units.map f) (unit_from_primitive hu)
+    rw [← this] at ha
+    simp at ha
+    rcases ha with ⟨i, hi⟩
+    simp at hi
+    rw [← map_zpow]  at hi
+    use (unit_from_primitive hu)^i,hi, Subgroup.zpow_mem (rootsOfUnity n R) (is_nth_root hu) i
+
+lemma nth_root_map_surj {n : ℕ+} {f : R →+* S} [IsDomain S]
+  (hR : fullRoots n R) (hf : nice n f):
+  Function.Surjective (nth_root_map n f) := by
     intro a
-    have : (a:Sˣ) ∈ Subgroup.zpowers (unit_from_primitive prim) := by
-      have powS := @IsPrimitiveRoot.zpowers_eq S instS _ n (unit_from_primitive prim) prim'
-      have a_root : (a:Sˣ) ∈ rootsOfUnity n S := by
-        sorry
-      rw [powS]
-      sorry
-    rw [Subgroup.mem_zpowers_iff] at this
-    rcases this with ⟨i, hi⟩
-    use (nth_root_from_primitive hu)^i
-    sorry
+    have ha := a.mem
+    rcases (image_nth_root_map hR hf a ha) with ⟨ b,hba,hb⟩
+    use ⟨ b,hb⟩
+    simp only [nth_root_map]
+    apply rootsOfUnity.coe_injective
+    simp
+    rw [← Units.eq_iff] at hba
+    rw [← hba]
+    rw [Units.coe_map]
+    simp
+
 
 lemma nth_root_map_bij {n : ℕ+} {f : R →+* S} [IsDomain R] [IsDomain S]
     (hR : fullRoots n R) (hf : nice n f) :
@@ -106,11 +132,9 @@ lemma nth_root_map_bij {n : ℕ+} {f : R →+* S} [IsDomain R] [IsDomain S]
     have cardS := cardFull n (toFull hR hf)
     rw [cardR,cardS]
 
-noncomputable def bij_nth_roots_gen (n : ℕ+) (f : R →+* S) [IsDomain R][IsDomain S]
+noncomputable def bij_nth_roots_gen {n : ℕ+} {f : R →+* S} [IsDomain R][IsDomain S]
   (hR : fullRoots n R) (hf : nice n f) :
   (rootsOfUnity n R) ≃ (rootsOfUnity n S) :=
     Equiv.ofBijective (nth_root_map n f) (nth_root_map_bij hR hf)
-
-
 
 end Preliminaries
