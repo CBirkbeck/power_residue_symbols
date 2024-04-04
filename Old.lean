@@ -24,6 +24,12 @@ abbrev ResidueFieldAtPrime2 (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥) := 𝓞 F �
 noncomputable section
 
 
+-- noncomputable instance : Field (ResidueFieldAtPrime p hp) := by
+  -- apply LocalRing.ResidueField.field
+
+-- noncomputable instance : CommRing (ResidueFieldAtPrime2 p) := by
+--   apply Ideal.Quotient.commRing
+
 noncomputable instance : Field (ResidueRingAtIdeal p) := by
   have h : Ideal.IsMaximal p := by
     apply Ideal.IsPrime.isMaximal hp hp2
@@ -85,6 +91,90 @@ lemma n_not_zero (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : (residue_map2 p
   exact zero_ne_one nquot
 
 
+/-
+abbrev cyclo (m : ℕ) : Polynomial ℤ := (Polynomial.X ^m) - (Polynomial.C 1)
+
+abbrev cyclom1  (m : ℕ): Polynomial ℤ :=
+  Finset.sum (Finset.range m) fun (i : ℕ) => Polynomial.X ^ i
+
+lemma P1 : Polynomial.eval (1 : ℤ) (cyclom1 n) = (n : ℤ) := by
+  rw [cyclom1]
+  rw [@Polynomial.eval_geom_sum]
+  simp
+
+
+lemma P_cyclo (m : ℕ) : (cyclom1 m) * (cyclo 1) = (cyclo m) := by
+  rw [cyclo,cyclom1,cyclo]
+  rw [@Polynomial.C_1]
+  simp [@pow_one]
+  rw [geom_sum_mul (α := Polynomial ℤ) (x:=Polynomial.X) (n:=m)]
+
+lemma Pzeta (i : ℕ):
+  ¬ (n ∣ i) → Polynomial.eval₂ (Int.castRingHom (𝓞 F)) (ζ^i) (cyclom1 n) = 0:= by
+  intro hi
+  have is_zero : Polynomial.eval₂ (Int.castRingHom (𝓞 F)) (ζ^i) (cyclo n) = 0 := by
+    rw [cyclo]
+    simp only [map_one, Polynomial.eval₂_sub, Polynomial.eval₂_X_pow, Polynomial.eval₂_one]
+    have : (ζ^i)^n = (ζ^n)^i := by ring
+    rw [this, ((IsPrimitiveRoot.iff_def ζ n).mp h).1]
+    ring_nf
+  have hii : ζ^i ≠ 1 := by
+    have := IsPrimitiveRoot.pow_eq_one_iff_dvd h i
+    contrapose! this
+    left
+    exact ⟨this,hi⟩
+  have non_zero : Polynomial.eval₂ (Int.castRingHom (𝓞 F)) (ζ^i) (cyclo 1) ≠ 0 := by
+    rw [cyclo]
+    simp only [pow_one, map_one, Polynomial.eval₂_sub, Polynomial.eval₂_X, Polynomial.eval₂_one,
+      ne_eq]
+    exact sub_ne_zero_of_ne hii
+
+  rw [← P_cyclo] at is_zero
+  simp only [Polynomial.eval₂_mul] at is_zero
+  rw [mul_eq_zero] at is_zero
+  cases' is_zero with h1 h2
+  . exact h1
+  . by_contra h
+    simp only [ne_eq, Polynomial.eval₂_sub, pow_one, Polynomial.eval₂_X, map_one,
+      Polynomial.eval₂_one] at *
+    exact non_zero h2
+
+
+-/
+
+
+
+/-
+-- show that if ζ^i has image 1 in the residue field then n divides i (this uses that n is prime to p)
+lemma injectivity (hpn : IsCoprime (n : ℤ) (Ideal.absNorm p)) :
+  ∀ (i : ℕ), ζ^i-1 ∈ p ↔ n ∣ i := by
+  intro i
+  constructor
+  . intro hinp
+    by_contra hi
+    have eval0 := Pzeta ζ n i hi
+    have evalmodp : Polynomial.eval₂ ((residue_map2 p hp hp2).comp (Int.castRingHom (𝓞 F))) ((residue_map2 p hp hp2) (ζ^i)) (cyclom1 n) = 0 := by
+      have : Polynomial.eval₂ ((residue_map2 p hp hp2).comp (Int.castRingHom (𝓞 F))) ((residue_map2 p hp hp2) (ζ^i)) (cyclom1 n) =
+         Finset.sum (Finset.range n) fun (i : ℕ) => (residue_map2 p hp hp2) ζ^i := by
+         unfold cyclom1
+         simp
+         sorry
+      sorry
+
+    have equalzetai : (residue_map2 p hp hp2) (ζ^i) = 1 := by sorry
+    rw [equalzetai] at evalmodp
+    sorry
+  intro hi
+  rcases hi with ⟨ k,rfl⟩
+  have : ζ^(n*k) = (ζ^n)^k := by ring
+  rw [this,((IsPrimitiveRoot.iff_def ζ n).mp h).1]
+  ring_nf
+  exact Ideal.zero_mem p
+
+#check injectivity
+-/
+
+
 lemma primitivemodp' (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by
   haveI  : NeZero (n : ResidueFieldAtPrime2 p hp hp2) := by
@@ -97,6 +187,22 @@ lemma primitivemodp' (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   simp only [Polynomial.IsRoot.definition, Polynomial.map_cyclotomic] at *
   exact h1
 
+
+/-
+lemma primitivemodp (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
+  IsPrimitiveRoot ((residue_map2 p hp hp2) ζ) n := by
+    rw [IsPrimitiveRoot.iff_def]
+    constructor
+    . calc (residue_map2 p hp hp2) ζ ^ (n : ℕ)= (residue_map2 p hp hp2) (ζ^ (n : ℕ)) := by exact rfl
+                _ = (residue_map2 p hp hp2) 1 := by rw [((IsPrimitiveRoot.iff_def ζ n).mp h).1]
+                _ = 1 := by exact rfl
+    intro i hi
+    rw [← injectivity ζ n h p hp hp2 hpn i]
+    have : (residue_map2 p hp hp2) ζ^i = (residue_map2 p hp hp2 (ζ^i)) := rfl
+    rw [this] at hi
+    rw [← Ideal.Quotient.eq,hi]
+    exact rfl
+-/
 
 lemma isunit : IsUnit ((residue_map2 p hp hp2) ζ) := by
   rw [← IsPrimitiveRoot.coe_units_iff] at h
@@ -117,6 +223,41 @@ lemma norm_div_lemmas (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
   have := IsPrimitiveRoot.eq_orderOf ht
   simp only at *
   rw [this]
+
+/-
+this should help for the lemma
+should we assume ζ to be a unit at the beginning? it would make things easier
+-/
+
+lemma root_is_unit
+{R : Type*} [CommRing R] (a : R) (k : ℕ+) (ha : a^(k : ℕ) = 1) : IsUnit a := by
+  rw [← isUnit_pow_iff (n := k)]
+  simp only [ha, isUnit_one,ne_eq, PNat.ne_zero, not_false_eq_true]
+  linarith [k.pos]
+
+lemma pow1 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+) (a : Rˣ) (u : Rˣ)
+  (hu : IsPrimitiveRoot u k) (ha : a^k.val = 1) :
+   ∃ (i : ℤ), u^i = a := by
+  have : a ∈ Subgroup.zpowers u := by
+    have pow_u := IsPrimitiveRoot.zpowers_eq hu
+    have a_root : a ∈ rootsOfUnity k R := by
+      rw [← mem_rootsOfUnity] at ha
+      exact ha
+    rw [pow_u]
+    assumption
+  rw [Subgroup.mem_zpowers_iff] at this
+  rcases this with ⟨ i, hi⟩
+  use i
+
+lemma pow2 {R : Type*} [CommRing R] [IsDomain R] (k : ℕ+)  (a : R) (u : Rˣ)
+  (hu : IsPrimitiveRoot u k) (ha : a^k.val = 1) :
+  ∃ (i : ℤ), ↑(u^i)  = a := by
+  have a_unit := root_is_unit a k  ha
+  have ha' : (IsUnit.unit a_unit)^k.val = 1 := by aesop
+  rcases pow1 k (IsUnit.unit a_unit) u hu ha' with ⟨i, hi⟩
+  use i
+  rw_mod_cast [hi]
+  simp only [IsUnit.unit_spec]
 
 
 --def powerResidueSymbol (a : 𝓞 F) (r : Ideal (𝓞 F)): ResidueRingAtIdeal r  :=
