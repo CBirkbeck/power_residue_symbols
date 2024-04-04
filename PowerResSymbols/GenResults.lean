@@ -138,3 +138,58 @@ noncomputable def bij_nth_roots_gen {n : ℕ+} {f : R →+* S} [IsDomain R][IsDo
     Equiv.ofBijective (nth_root_map n f) (nth_root_map_bij hR hf)
 
 end Preliminaries
+
+section FiniteField
+
+variable {R : Type*} [Field R] [Fintype R]
+
+lemma card_units : Fintype.card (Rˣ) = Fintype.card R - 1 := by
+  rw [← Fintype.card_units]
+
+lemma div_n {n : ℕ+} (hR: fullRoots n R) : n.val ∣ Fintype.card Rˣ := by
+  obtain ⟨ u, hu⟩ := hR
+  have divide := orderOf_dvd_card (G := Rˣ)
+        (x := unit_from_primitive hu)
+  convert divide
+  have := IsPrimitiveRoot.eq_orderOf hu
+  simp [unit_from_primitive] at *
+  rw [this,← orderOf_units,IsUnit.unit_spec]
+
+lemma pow_n {n : ℕ+} (hdiv: n.val ∣ Fintype.card Rˣ) (x : Rˣ) : (x^((Fintype.card Rˣ)/n.val))^n.val = 1 := by
+  obtain ⟨k,hk⟩ := hdiv
+  rw [hk]
+  simp
+  have : (x^k)^n.val = x^(n.val*k) := by group
+  rw [this,← hk]
+  exact pow_card_eq_one
+
+lemma root_n {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) : ∀ (x:Rˣ), x^((Fintype.card Rˣ)/n.val) ∈ rootsOfUnity n R := by
+  intro x
+  rw [mem_rootsOfUnity]
+  exact pow_n hdiv x
+
+def pow_map (k : ℕ) : Rˣ →* Rˣ :=
+  MonoidHom.mk' (fun x => x^k) (by intro x y ; simp ; exact mul_pow x y k )
+
+noncomputable def to_roots {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) : Rˣ →* rootsOfUnity n R :=
+  MonoidHom.codRestrict (pow_map ((Fintype.card Rˣ)/n.val)) (rootsOfUnity n R) (root_n hdiv)
+
+instance : IsCyclic Rˣ := by
+  infer_instance
+
+/- this probably exists somewhere in the mathlib -/
+lemma is_nth_pow {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) :
+  (to_roots hdiv).ker = (pow_map n.val).range := by
+  ext x
+  constructor
+  . intro hx
+    sorry
+  intro hx
+  rw [MonoidHom.mem_ker]
+  obtain ⟨ y,rfl⟩ := hx
+  simp [to_roots,pow_map]
+  rw [pow_n hdiv]
+
+
+end FiniteField
+
