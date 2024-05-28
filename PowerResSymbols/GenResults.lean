@@ -178,6 +178,7 @@ instance : IsCyclic Rˣ := by
   infer_instance
 
 /- this probably exists somewhere in the mathlib -/
+/- recognizing when an element of the field is an n-th power -/
 lemma is_nth_pow {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) :
   (to_roots hdiv).ker = (pow_map n.val).range := by
   ext x
@@ -193,3 +194,35 @@ lemma is_nth_pow {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) :
 
 end FiniteField
 
+section ResidueSymbolMap
+
+/-
+The goal here is to put it all together to a statement that will apply to number fields
+containing n-th roots of unity, with n prime to the residue characteristic.
+
+So we make a statement for a domain R, n, a maximal ideal p, the property that
+R has all n-th root of unity and the map R -> R/p is "nice", and we state that
+we have a multiplicative map from R \ p to the n-th roots of unity.
+
+We write also the property that the image is 1 iff the element is an n-th root modulo p
+
+Ideal.primeCompl p is the monoid R \ p (when p is assumed to be prime)
+
+
+Remark: we can also do it as a multiplicative map R -> 0 union n-th roots of unity,
+this is also a monoid map
+-/
+
+variable {R : Type*} [CommRing R] [IsDomain R]
+variable {n : ℕ+} (hR : fullRoots n R)
+variable (p : Ideal R) (hp : Ideal.IsMaximal p) (hres : nice n (Ideal.Quotient.mk p))
+
+def residuesymbolmap : (Ideal.primeCompl p) →* (rootsOfUnity n R) := sorry
+
+end ResidueSymbolMap
+
+section NumberField
+
+/- here we state everything for a number field -/
+
+end NumberField
