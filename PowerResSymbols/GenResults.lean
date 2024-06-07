@@ -132,6 +132,7 @@ lemma nth_root_map_bij {n : ℕ+} {f : R →+* S} [IsDomain R] [IsDomain S]
     have cardS := cardFull n (toFull hR hf)
     rw [cardR,cardS]
 
+/- multiplicative bijection between the sets of n-roots of unity -/
 noncomputable def bij_nth_roots_gen {n : ℕ+} {f : R →+* S} [IsDomain R][IsDomain S]
   (hR : fullRoots n R) (hf : nice n f) :
   (rootsOfUnity n R) ≃ (rootsOfUnity n S) :=
@@ -140,6 +141,10 @@ noncomputable def bij_nth_roots_gen {n : ℕ+} {f : R →+* S} [IsDomain R][IsDo
 end Preliminaries
 
 section FiniteField
+
+/- show that in a finite field, if there are all n-th roots of unity then n
+divides the cardinality of units ; and we can construct n-th roots of unity
+by raising to the power card(units)/n -/
 
 variable {R : Type*} [Field R] [Fintype R]
 
@@ -171,6 +176,7 @@ lemma root_n {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) : ∀ (x:Rˣ), x^((F
 def pow_map (k : ℕ) : Rˣ →* Rˣ :=
   MonoidHom.mk' (fun x => x^k) (by intro x y ; simp ; exact mul_pow x y k )
 
+/- map from the units to the n-th roots of unity -/
 noncomputable def to_roots {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) : Rˣ →* rootsOfUnity n R :=
   MonoidHom.codRestrict (pow_map ((Fintype.card Rˣ)/n.val)) (rootsOfUnity n R) (root_n hdiv)
 
@@ -208,6 +214,13 @@ We write also the property that the image is 1 iff the element is an n-th root m
 
 Ideal.primeCompl p is the monoid R \ p (when p is assumed to be prime)
 
+the map is a composition of 3 maps:
+- multiplicative map from R \ p to (R/p)ˣ (this is residueMultMap below)
+- map from (R/p)ˣ to the n-th roots of the quotient (this is to_roots above)
+- inverse of the bijection between n-th roots of R and n-th roots of R/p (this is bij_nth_roots_gen above)
+
+We write also the property that the image is 1 iff the element is an n-th root modulo p,
+which we deduce from is_nth_pow above
 
 Remark: we can also do it as a multiplicative map R -> 0 union n-th roots of unity,
 this is also a monoid map
@@ -215,9 +228,12 @@ this is also a monoid map
 
 variable {R : Type*} [CommRing R] [IsDomain R]
 variable {n : ℕ+} (hR : fullRoots n R)
-variable (p : Ideal R) (hp : Ideal.IsMaximal p) (hres : nice n (Ideal.Quotient.mk p))
+variable (p : Ideal R) (hp : Ideal.IsMaximal p) [hRp : Fintype (R ⧸ p)] (hdiv : n.val ∣ Fintype.card (R⧸p)ˣ)
 
-def residuesymbolmap : (Ideal.primeCompl p) →* (rootsOfUnity n R) := sorry
+
+def residueMultMap : (Ideal.primeCompl p) →* (R ⧸ p)ˣ := sorry
+
+noncomputable def residueSymbolMap : (Ideal.primeCompl p) →* (rootsOfUnity n R) := sorry
 
 end ResidueSymbolMap
 
