@@ -177,14 +177,33 @@ def pow_map (k : ℕ) : Rˣ →* Rˣ :=
   MonoidHom.mk' (fun x => x^k) (by intro x y ; simp ; exact mul_pow x y k )
 
 /- map from the units to the n-th roots of unity -/
+noncomputable def to_roots {n : ℕ+} (hn : fullRoots n R) : Rˣ →* rootsOfUnity n R :=
+  MonoidHom.codRestrict (pow_map ((Fintype.card Rˣ)/n.val)) (rootsOfUnity n R) (root_n (div_n hn))
+
+/-
+
 noncomputable def to_roots {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) : Rˣ →* rootsOfUnity n R :=
   MonoidHom.codRestrict (pow_map ((Fintype.card Rˣ)/n.val)) (rootsOfUnity n R) (root_n hdiv)
+-/
 
 instance : IsCyclic Rˣ := by
   infer_instance
 
 /- this probably exists somewhere in the mathlib -/
 /- recognizing when an element of the field is an n-th power -/
+lemma is_nth_pow {n : ℕ+} (hn : fullRoots n R) :
+  (to_roots hn).ker = (pow_map n.val).range := by
+  ext x
+  constructor
+  . intro hx
+    sorry
+  intro hx
+  rw [MonoidHom.mem_ker]
+  obtain ⟨ y,rfl⟩ := hx
+  simp [to_roots,pow_map]
+  rw [pow_n (div_n hn)]
+
+/-
 lemma is_nth_pow {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) :
   (to_roots hdiv).ker = (pow_map n.val).range := by
   ext x
@@ -196,7 +215,7 @@ lemma is_nth_pow {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) :
   obtain ⟨ y,rfl⟩ := hx
   simp [to_roots,pow_map]
   rw [pow_n hdiv]
-
+-/
 
 end FiniteField
 
@@ -210,6 +229,8 @@ So we make a statement for a domain R, n, a maximal ideal p, the property that
 R has all n-th root of unity and the map R -> R/p is "nice", and we state that
 we have a multiplicative map from R \ p to the n-th roots of unity.
 
+We write also the property that the image is 1 iff the element is an n-th root modulo p
+
 Ideal.primeCompl p is the monoid R \ p (when p is assumed to be prime)
 
 the map is a composition of 3 maps:
@@ -220,19 +241,81 @@ the map is a composition of 3 maps:
 We write also the property that the image is 1 iff the element is an n-th root modulo p,
 which we deduce from is_nth_pow above
 
-
-
 Remark: we can also do it as a multiplicative map R -> 0 union n-th roots of unity,
 this is also a monoid map
 -/
 
 variable {R : Type*} [CommRing R] [IsDomain R]
 variable {n : ℕ+} (hR : fullRoots n R)
-variable (p : Ideal R) (hp : Ideal.IsMaximal p) [hRp : Fintype (R ⧸ p)] (hdiv : n.val ∣ Fintype.card (R⧸p)ˣ)
+variable {p : Ideal R} (hp : Ideal.IsMaximal p)
 
-def residueMultMap : (Ideal.primeCompl p) →* (R ⧸ p)ˣ := sorry
+lemma imageUnit :
+  ∀ (x : p.primeCompl), IsUnit ((Ideal.Quotient.mk p).toMonoidHom x) := by
+  intro x
+  have : Ideal.Quotient.mk p x ≠ 0 := by
+    by_contra h
+    rw [Ideal.Quotient.eq_zero_iff_mem] at h
+    exact (Set.not_mem_of_mem_compl x.mem) h
+  rw [Ideal.Quotient.maximal_ideal_iff_isField_quotient] at hp
+  rcases (IsField.mul_inv_cancel hp this) with ⟨ b, hb⟩
+  rw [isUnit_iff_exists]
+  use b, hb
+  rw [mul_comm] at hb
+  exact hb
 
-noncomputable def residueSymbolMap : (Ideal.primeCompl p) →* (rootsOfUnity n R) := sorry
+noncomputable def residueMultMap :
+(Ideal.primeCompl p) →* (R ⧸ p)ˣ
+:=
+{ toFun := fun x => (IsUnit.unit (imageUnit hp x))
+  map_one' := by
+    ext
+    simp
+  map_mul' := by
+    intros
+    ext
+    simp
+}
+
+/-
+-- probably already exists somewhere
+noncomputable def unitMap {M : Type} {N : Type} [Monoid M] [Monoid N]
+(f : M →* N) (A : Submonoid M)
+(h : ∀ (x : A), IsUnit (f x)) :
+A →* Nˣ :=
+{ toFun := fun x => (IsUnit.unit (h x))
+  map_one' := by
+    ext
+    simp
+  map_mul' := by
+    intros
+    ext
+    simp
+}
+
+-- why doesn't this work?
+noncomputable def residueMultMap (p : Ideal R) (hp : Ideal.IsMaximal p) : p.primeCompl →* (R ⧸ p)ˣ :=
+  unitMap (Ideal.Quotient.mk p).toMonoidHom p.primeCompl (imageUnit hp)
+  sorry
+-/
+
+
+instance : Field (R ⧸ p) := by sorry
+-- noncomputable instance : Field (R ⧸ p) := by apply Ideal.Quotient.field
+instance : IsDomain (R ⧸ p) := by infer_instance
+
+noncomputable def residueSymbolMap'
+(hn : nice n (Ideal.Quotient.mk p)):
+(Ideal.primeCompl p) →* (rootsOfUnity n (R ⧸ p)) :=
+(to_roots (toFull hR hn)).comp (residueMultMap hp)
+
+/-
+noncomputable def residueSymbolMap
+(hn : nice n (Ideal.Quotient.mk p)):
+(Ideal.primeCompl p) →* (rootsOfUnity n R) :=
+Function.comp
+Function.comp (bij_nth_roots_gen hR hn).invFun
+(to_roots (toFull hR hn)) (residueMultMap hp)
+-/
 
 end ResidueSymbolMap
 
