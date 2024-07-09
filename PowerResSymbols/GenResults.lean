@@ -9,7 +9,7 @@ open scoped Classical
 
 section Preliminaries
 
-variable {R S : Type*} [instR : CommRing R] [instS : CommRing S]
+variable {R S : Type*} [CommRing R] [CommRing S]
 
 -- definitions relative to primitive roots
 
@@ -132,25 +132,22 @@ lemma nth_root_map_bij {n : ℕ+} {f : R →+* S} [IsDomain R] [IsDomain S]
     have cardS := cardFull n (toFull hR hf)
     rw [cardR,cardS]
 
-/- multiplicative bijection between the sets of n-roots of unity -/
+/- bijection between the sets of n-roots of unity -/
 noncomputable def bij_nth_roots_gen {n : ℕ+} {f : R →+* S} [IsDomain R][IsDomain S]
   (hR : fullRoots n R) (hf : nice n f) :
-  (rootsOfUnity n R) ≃ (rootsOfUnity n S) :=
-    Equiv.ofBijective (nth_root_map n f) (nth_root_map_bij hR hf)
+  (rootsOfUnity n R) ≃* (rootsOfUnity n S) :=
+    MulEquiv.ofBijective (nth_root_map n f) (nth_root_map_bij hR hf)
+
 
 end Preliminaries
 
-section FiniteField
+section FiniteRing
 
-/- show that in a finite field, if there are all n-th roots of unity then n
+/- show that in a finite ring, if there are all n-th roots of unity then n
 divides the cardinality of units ; and we can construct n-th roots of unity
 by raising to the power card(units)/n -/
 
-variable {R : Type*} [Field R] [Fintype R]
-
-lemma card_units : Fintype.card (Rˣ) = Fintype.card R - 1 := by
-  rw [← Fintype.card_units]
-
+variable {R : Type*} [CommRing R] [Fintype R]
 lemma div_n {n : ℕ+} (hR: fullRoots n R) : n.val ∣ Fintype.card Rˣ := by
   obtain ⟨ u, hu⟩ := hR
   have divide := orderOf_dvd_card (G := Rˣ)
@@ -177,53 +174,16 @@ def pow_map (k : ℕ) : Rˣ →* Rˣ :=
   MonoidHom.mk' (fun x => x^k) (by intro x y ; simp ; exact mul_pow x y k )
 
 /- map from the units to the n-th roots of unity -/
-noncomputable def to_roots {n : ℕ+} (hn : fullRoots n R) : Rˣ →* rootsOfUnity n R :=
+noncomputable def toRoots {n : ℕ+} (hn : fullRoots n R) : Rˣ →* rootsOfUnity n R :=
   MonoidHom.codRestrict (pow_map ((Fintype.card Rˣ)/n.val)) (rootsOfUnity n R) (root_n (div_n hn))
 
-/-
+end FiniteRing
 
-noncomputable def to_roots {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) : Rˣ →* rootsOfUnity n R :=
-  MonoidHom.codRestrict (pow_map ((Fintype.card Rˣ)/n.val)) (rootsOfUnity n R) (root_n hdiv)
--/
-
-instance : IsCyclic Rˣ := by
-  infer_instance
-
-/- this probably exists somewhere in the mathlib -/
-/- recognizing when an element of the field is an n-th power -/
-lemma is_nth_pow {n : ℕ+} (hn : fullRoots n R) :
-  (to_roots hn).ker = (pow_map n.val).range := by
-  ext x
-  constructor
-  . intro hx
-    sorry
-  intro hx
-  rw [MonoidHom.mem_ker]
-  obtain ⟨ y,rfl⟩ := hx
-  simp [to_roots,pow_map]
-  rw [pow_n (div_n hn)]
+section ResidueMultMap
 
 /-
-lemma is_nth_pow {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) :
-  (to_roots hdiv).ker = (pow_map n.val).range := by
-  ext x
-  constructor
-  . intro hx
-    sorry
-  intro hx
-  rw [MonoidHom.mem_ker]
-  obtain ⟨ y,rfl⟩ := hx
-  simp [to_roots,pow_map]
-  rw [pow_n hdiv]
--/
-
-end FiniteField
-
-section ResidueSymbolMap
-
-/-
-The goal here is to put it all together to a statement that will apply to number fields
-containing n-th roots of unity, with n prime to the residue characteristic.
+The goal here is to put it all together to a statement that will apply to rings of integers of
+number fields containing n-th roots of unity, with n prime to the residue characteristic.
 
 So we make a statement for a domain R, n, a maximal ideal p, the property that
 R has all n-th root of unity and the map R -> R/p is "nice", and we state that
@@ -235,7 +195,7 @@ Ideal.primeCompl p is the monoid R \ p (when p is assumed to be prime)
 
 the map is a composition of 3 maps:
 - multiplicative map from R \ p to (R/p)ˣ (this is residueMultMap below)
-- map from (R/p)ˣ to the n-th roots of the quotient (this is to_roots above)
+- map from (R/p)ˣ to the n-th roots of the quotient (this is toRootsQuot below, an application of toRoots above)
 - inverse of the bijection between n-th roots of R and n-th roots of R/p (this is bij_nth_roots_gen above)
 
 We write also the property that the image is 1 iff the element is an n-th root modulo p,
@@ -246,8 +206,8 @@ this is also a monoid map
 -/
 
 variable {R : Type*} [CommRing R] [IsDomain R]
-variable {n : ℕ+} (hR : fullRoots n R)
-variable {p : Ideal R} (hp : Ideal.IsMaximal p)
+variable {p : Ideal R} (hp : Ideal.IsMaximal p) [instFinite: Fintype (R ⧸ p)]
+variable {n : ℕ+} (hR : fullRoots n R) (hn : nice n (Ideal.Quotient.mk p))
 
 lemma imageUnit :
   ∀ (x : p.primeCompl), IsUnit ((Ideal.Quotient.mk p).toMonoidHom x) := by
@@ -276,51 +236,24 @@ noncomputable def residueMultMap :
     simp
 }
 
-/-
--- probably already exists somewhere
-noncomputable def unitMap {M : Type} {N : Type} [Monoid M] [Monoid N]
-(f : M →* N) (A : Submonoid M)
-(h : ∀ (x : A), IsUnit (f x)) :
-A →* Nˣ :=
-{ toFun := fun x => (IsUnit.unit (h x))
-  map_one' := by
-    ext
-    simp
-  map_mul' := by
-    intros
-    ext
-    simp
-}
+noncomputable def toRootsQuot :
+(R ⧸ p)ˣ →* (rootsOfUnity n (R ⧸ p)) :=
+toRoots (toFull hR hn)
 
--- why doesn't this work?
-noncomputable def residueMultMap (p : Ideal R) (hp : Ideal.IsMaximal p) : p.primeCompl →* (R ⧸ p)ˣ :=
-  unitMap (Ideal.Quotient.mk p).toMonoidHom p.primeCompl (imageUnit hp)
-  sorry
--/
-
-
-instance : Field (R ⧸ p) := by sorry
--- noncomputable instance : Field (R ⧸ p) := by apply Ideal.Quotient.field
-instance : IsDomain (R ⧸ p) := by infer_instance
-
-noncomputable def residueSymbolMap'
-(hn : nice n (Ideal.Quotient.mk p)):
-(Ideal.primeCompl p) →* (rootsOfUnity n (R ⧸ p)) :=
-(to_roots (toFull hR hn)).comp (residueMultMap hp)
-
-/-
-noncomputable def residueSymbolMap
-(hn : nice n (Ideal.Quotient.mk p)):
+noncomputable def residueSymbolMap :
 (Ideal.primeCompl p) →* (rootsOfUnity n R) :=
-Function.comp
-Function.comp (bij_nth_roots_gen hR hn).invFun
-(to_roots (toFull hR hn)) (residueMultMap hp)
--/
+(((bij_nth_roots_gen hR hn).symm.toMonoidHom).comp (@toRootsQuot _ _ _ _ _ hR hn)).comp
+(@residueMultMap _ _ _ hp)
 
-end ResidueSymbolMap
+end ResidueMultMap
 
 section NumberField
 
 /- here we state everything for a number field -/
 
 end NumberField
+
+/-
+lemma card_units : Fintype.card (Rˣ) = Fintype.card R - 1 := by
+  rw [← Fintype.card_units]
+-/
