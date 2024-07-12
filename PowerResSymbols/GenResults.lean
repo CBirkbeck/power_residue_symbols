@@ -251,6 +251,63 @@ section NumberField
 
 /- here we state everything for a number field -/
 
+open scoped NumberField
+open scoped Classical
+
+variable {F : Type*} [Field F] [NumberField F]
+variable (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 :p ≠ ⊥)
+
+/--The residue field of a number field (specifically the ring of intergers) at a prime-/
+abbrev ResidueFieldAtIdeal (p : Ideal (𝓞 F)) (hp : Ideal.IsPrime p) (hp2 : p ≠ ⊥) := 𝓞 F ⧸ p
+
+lemma isMaximalIdeal : Ideal.IsMaximal p :=
+  Ideal.IsPrime.isMaximal hp hp2
+
+noncomputable instance instField : Field (ResidueFieldAtIdeal p hp hp2) := by
+  have := isMaximalIdeal p hp hp2
+  apply Ideal.Quotient.field
+
+noncomputable instance instFinite : Fintype (ResidueFieldAtIdeal p hp hp2) :=
+  Ideal.fintypeQuotientOfFreeOfNeBot p hp2
+
+lemma cardResidue :
+(Fintype.card (ResidueFieldAtIdeal p hp hp2): ResidueFieldAtIdeal p hp hp2) = 0 :=
+ @FiniteField.cast_card_eq_zero (ResidueFieldAtIdeal p hp hp2)
+ (instField p hp hp2) (instFinite p hp hp2)
+
+variable (ζ : (𝓞 F)) (n : ℕ+) (h : IsPrimitiveRoot ζ n)
+
+lemma hasRoots : fullRoots n (𝓞 F) := by
+  use ζ
+
+lemma n_not_zero (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : (Ideal.Quotient.mk p) n ≠ 0 := by
+  have eq0 := FiniteField.cast_card_eq_zero (ResidueFieldAtIdeal p hp hp2)
+  have : Fintype.card (ResidueFieldAtIdeal p hp hp2) = Ideal.absNorm p := by
+    rw [@Ideal.absNorm_apply]
+    symm
+    convert Submodule.cardQuot_apply _
+  rw [this] at eq0
+  rcases hpn with ⟨a,b,H⟩
+  have nquot : (a : ((𝓞 F) ⧸ p)) * (n : ((𝓞 F) ⧸ p)) = 1 := by
+    have eq1 : ((a*n+b*(Ideal.absNorm p)):((𝓞 F) ⧸ p)) = (1 : ((𝓞 F) ⧸ p)) := by
+      rw_mod_cast [H]
+      simp only [Nat.cast_one]
+    rw [← eq1,eq0]
+    ring
+  intro hnzero
+  have : (n : (𝓞 F) ⧸ p) = 0 := hnzero
+  rw [this] at nquot
+  ring_nf at nquot
+  exact zero_ne_one nquot
+
+
+lemma niceQuot (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : nice n (Ideal.Quotient.mk p) :=
+  isNice (Ideal.Quotient.mk p) (n_not_zero p hp hp2 n hpn)
+
+noncomputable def powerResidueSympbol (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
+(Ideal.primeCompl p) →* rootsOfUnity n (𝓞 F) :=
+@residueSymbolMap (𝓞 F) _ _ p (isMaximalIdeal p hp hp2)  (instFinite p hp hp2) n (hasRoots ζ n h) (niceQuot p hp hp2 n hpn)
+
 end NumberField
 
 /-
