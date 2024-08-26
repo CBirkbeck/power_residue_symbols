@@ -230,10 +230,68 @@ variable {R : Type*} [CommRing R] [IsDomain R]
 variable {n : ℕ+} (hR : fullRoots n R)
 variable (p : Ideal R) (hp : Ideal.IsMaximal p) [hRp : Fintype (R ⧸ p)] (hdiv : n.val ∣ Fintype.card (R⧸p)ˣ)
 
+--set_option pp.all true
 
-def residueMultMap : (Ideal.primeCompl p) →* (R ⧸ p)ˣ := sorry
+variable {M : Type} {N : Type} [Monoid M] [Monoid N]
+
+-- probably already exists somewhere
+noncomputable def unitMap {M : Type} {N : Type} [Monoid M] [Monoid N]
+(f : M →* N)
+(h : ∀ (x : M), IsUnit (f x)) :
+M →* Nˣ :=
+{ toFun := fun x => (IsUnit.unit (h x))
+  map_one' := by
+    ext
+    simp
+  map_mul' := by
+    intros
+    ext
+    simp
+}
+
+noncomputable def blamap (f : M →* N) (A : Submonoid M) (h : ∀ (x : A), IsUnit (f x)) : A →* Nˣ :=
+  unitMap (f.restrict A) h
+
+#check blamap
+
+lemma imageUnit :
+  ∀ (x : Ideal.primeCompl p), IsUnit ((Ideal.Quotient.mk p).toMonoidHom x) := by
+  sorry
+
+#check imageUnit p hp
+
+noncomputable def residueMultMap : (Ideal.primeCompl p) →* (R ⧸ p)ˣ :=
+  blamap (Ideal.Quotient.mk p).toMonoidHom (Ideal.primeCompl p) (imageUnit p hp)
+  sorry
+  -- unitMap ↥(Ideal.primeCompl p) (R ⧸ p) (residueMultMap' p hp) (imageUnit p hp)
+  -- unitMap (residueMultMap' p hp) (imageUnit p hp)
+
+
+
+/-
+
+def residueMultMap' : (Ideal.primeCompl p) →* R ⧸ p :=
+  --MonoidHom.restrict (Ideal.Quotient.mk p) (Ideal.primeCompl p)
+  (Ideal.Quotient.mk p).toMonoidHom.restrict (Ideal.primeCompl p)
+
+#check residueMultMap' p hp
+
+#check imageUnit p hp
+
+#check unitMap (residueMultMap' p hp) (imageUnit p hp)
+
+
+def residueMultMap : (Ideal.primeCompl p) →* (R ⧸ p)ˣ :=
+  sorry
+  -- unitMap ↥(Ideal.primeCompl p) (R ⧸ p) (residueMultMap' p hp) (imageUnit p hp)
+  -- unitMap (residueMultMap' p hp) (imageUnit p hp)
+
+#check residueMultMap' p hp
+#check imageUnit p hp
 
 noncomputable def residueSymbolMap : (Ideal.primeCompl p) →* (rootsOfUnity n R) := sorry
+
+-/
 
 end ResidueSymbolMap
 
