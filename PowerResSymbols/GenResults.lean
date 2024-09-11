@@ -165,6 +165,24 @@ lemma pow_n {n : ℕ+} (hdiv: n.val ∣ Fintype.card Rˣ) (x : Rˣ) : (x^((Finty
   rw [this,← hk]
   exact pow_card_eq_one
 
+lemma pow_n' {n : ℕ+} (hdiv: n.val ∣ Fintype.card Rˣ) (x : Rˣ) : (x^n.val)^((Fintype.card Rˣ)/n.val) = 1 := by
+  obtain ⟨k,hk⟩ := hdiv
+  rw [hk]
+  simp
+  have : (x^n.val)^k = x^(n.val*k) := by group
+  rw [this,← hk]
+  exact pow_card_eq_one
+
+lemma pow_n'' {n : ℕ+} (i : ℤ) (hdiv: n.val ∣ Fintype.card Rˣ) (x : Rˣ) : (x^i)^((Fintype.card Rˣ)/n.val) = x^(i*(Fintype.card Rˣ) / n) := by
+  obtain ⟨k,hk⟩ := hdiv
+  rw [hk]
+  simp
+  have : (x^i)^k = x^(i*k) := by group
+  rw [this]
+  ring_nf
+  simp
+
+
 lemma root_n {n : ℕ+} (hdiv : n.val ∣ Fintype.card Rˣ) : ∀ (x:Rˣ), x^((Fintype.card Rˣ)/n.val) ∈ rootsOfUnity n R := by
   intro x
   rw [mem_rootsOfUnity]
@@ -176,6 +194,29 @@ def pow_map (k : ℕ) : Rˣ →* Rˣ :=
 /- map from the units to the n-th roots of unity -/
 noncomputable def toRoots {n : ℕ+} (hn : fullRoots n R) : Rˣ →* rootsOfUnity n R :=
   MonoidHom.codRestrict (pow_map ((Fintype.card Rˣ)/n.val)) (rootsOfUnity n R) (root_n (div_n hn))
+
+-- this is probably already somewhere
+lemma cyclicUnits [IsDomain R] [Fintype R] : IsCyclic Rˣ := by
+  sorry
+
+lemma toRootsKer {n : ℕ+} [IsDomain R] (hn : fullRoots n R) :
+  (toRoots hn).ker = (pow_map n.val).range := by
+  have cyclic : IsCyclic Rˣ := cyclicUnits
+  ext x
+  rw [MonoidHom.mem_ker]
+  simp [toRoots,pow_map]
+  constructor
+  . intro hx
+    rcases cyclic with ⟨ g, hg⟩
+    have := hg x
+    rw [Subgroup.mem_zpowers_iff] at this
+    obtain ⟨ k, hk⟩ := this
+    rw [← hk] at hx
+    rw [pow_n''] at hx
+    sorry
+  intro hx
+  obtain ⟨ y,rfl⟩ := hx
+  rw [pow_n' (div_n hn)]
 
 end FiniteRing
 
@@ -240,10 +281,29 @@ noncomputable def toRootsQuot :
 (R ⧸ p)ˣ →* (rootsOfUnity n (R ⧸ p)) :=
 toRoots (toFull hR hn)
 
+noncomputable def residueToRootsQuot :
+(Ideal.primeCompl p) →* (rootsOfUnity n (R ⧸ p)) :=
+((toRootsQuot hR hn)).comp (residueMultMap hp)
+
 noncomputable def residueSymbolMap :
 (Ideal.primeCompl p) →* (rootsOfUnity n R) :=
-(((bij_nth_roots_gen hR hn).symm.toMonoidHom).comp (@toRootsQuot _ _ _ _ _ hR hn)).comp
-(@residueMultMap _ _ _ hp)
+((bij_nth_roots_gen hR hn).symm.toMonoidHom).comp (residueToRootsQuot hp hR hn)
+
+lemma residueSymbolMapMKerSimp :
+MonoidHom.mker (residueSymbolMap hp hR hn) = MonoidHom.mker (residueToRootsQuot hp hR hn) := by
+  simp [residueSymbolMap]
+  rw [← MonoidHom.comap_mker]
+  have : MonoidHom.mker (MulEquiv.toMonoidHom (MulEquiv.symm (bij_nth_roots_gen hR hn))) = ⊥ := by
+    sorry
+  rw [this,MonoidHom.comap_bot']
+
+theorem residueSymbolMapMKer :
+x ∈ MonoidHom.mker (residueSymbolMap hp hR hn) ↔
+∃ (y:R), y^(n.val)-x ∈ p := by
+  rw [residueSymbolMapMKerSimp]
+  simp [residueToRootsQuot]
+  rw [← MonoidHom.comap_mker]
+  sorry
 
 end ResidueMultMap
 
@@ -304,9 +364,10 @@ lemma n_not_zero (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : (Ideal.Quotient
 lemma niceQuot (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) : nice n (Ideal.Quotient.mk p) :=
   isNice (Ideal.Quotient.mk p) (n_not_zero p hp hp2 n hpn)
 
-noncomputable def powerResidueSympbol (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
+noncomputable def powerResidueSymbol (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p)) :
 (Ideal.primeCompl p) →* rootsOfUnity n (𝓞 F) :=
 @residueSymbolMap (𝓞 F) _ _ p (isMaximalIdeal p hp hp2)  (instFinite p hp hp2) n (hasRoots ζ n h) (niceQuot p hp hp2 n hpn)
+
 
 end NumberField
 
