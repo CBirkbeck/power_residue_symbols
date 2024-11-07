@@ -148,6 +148,8 @@ divides the cardinality of units ; and we can construct n-th roots of unity
 by raising to the power card(units)/n -/
 
 variable {R : Type*} [CommRing R] [Fintype R]
+-- Fintype.finite
+
 lemma div_n {n : ℕ+} (hR: fullRoots n R) : n.val ∣ Fintype.card Rˣ := by
   obtain ⟨ u, hu⟩ := hR
   have divide := orderOf_dvd_card (G := Rˣ)
@@ -196,24 +198,62 @@ noncomputable def toRoots {n : ℕ+} (hn : fullRoots n R) : Rˣ →* rootsOfUnit
   MonoidHom.codRestrict (pow_map ((Fintype.card Rˣ)/n.val)) (rootsOfUnity n R) (root_n (div_n hn))
 
 -- this is probably already somewhere
-lemma cyclicUnits [IsDomain R] [Fintype R] : IsCyclic Rˣ := by
-  sorry
+lemma cyclicUnits {R : Type*} [CommRing R] [IsDomain R] [Fintype R] :
+  ∃ (g : Rˣ), (orderOf g = Fintype.card Rˣ) ∧ (∀ (x : Rˣ), ∃ (n : ℕ), g^n = x) := by
+  have this := @IsCyclic.exists_monoid_generator Rˣ _ _ _
+  obtain ⟨ g, hg ⟩ := this
+  use g
+  have hggen :  ∀ (x : Rˣ), x ∈ Subgroup.zpowers g := by
+    intro x
+    have := hg x
+    rw [Submonoid.mem_powers_iff] at this
+    rw [Subgroup.mem_zpowers_iff]
+    obtain ⟨ n, hn⟩ := this
+    use ↑n
+    rw [← hn]
+    simp
+  have := orderOf_eq_card_of_forall_mem_zpowers hggen
+  constructor
+  . exact this
+  intro x
+  have h := hg x
+  rw [← Submonoid.mem_powers_iff]
+  exact h
+
+/-
+example (a b c : ℕ) (h : c ≠ 0) (H : a*c ∣ b*c): a ∣ b := by
+  rw [mul_dvd_mul_iff_right h] at H
+  exact H
+-/
 
 lemma toRootsKer {n : ℕ+} [IsDomain R] (hn : fullRoots n R) :
   (toRoots hn).ker = (pow_map n.val).range := by
-  have cyclic : IsCyclic Rˣ := cyclicUnits
   ext x
   rw [MonoidHom.mem_ker]
   simp [toRoots,pow_map]
   constructor
-  . intro hx
-    rcases cyclic with ⟨ g, hg⟩
-    have := hg x
-    rw [Subgroup.mem_zpowers_iff] at this
-    obtain ⟨ k, hk⟩ := this
-    rw [← hk] at hx
-    rw [pow_n''] at hx
-    sorry
+  . obtain ⟨ k,hk⟩ :=  div_n hn
+    obtain ⟨ g, ⟨og,gg⟩  ⟩ := @cyclicUnits R _ _ _
+    obtain ⟨ r,rfl ⟩ := gg x
+    intro hr
+    rw [hk] at hr
+    have divides : ↑(Fintype.card Rˣ) ∣ (r*k) := by
+      rw [← og]
+      apply (@orderOf_dvd_iff_pow_eq_one Rˣ _ g (r*k)).mpr
+      simp at hr
+      rw [← hr]
+      group
+    rw [hk] at divides
+    have kzero : k ≠ 0 := by
+      have : Fintype.card Rˣ ≠ 0 := Fintype.card_ne_zero
+      rw [hk] at this
+      simp only [ne_eq, mul_eq_zero, PNat.ne_zero, false_or] at this
+      exact this
+    rw [mul_dvd_mul_iff_right kzero] at divides
+    obtain ⟨ m, hm ⟩ := divides
+    use g^m
+    rw [hm]
+    group
   intro hx
   obtain ⟨ y,rfl⟩ := hx
   rw [pow_n' (div_n hn)]
@@ -296,6 +336,7 @@ MonoidHom.mker (residueSymbolMap hp hR hn) = MonoidHom.mker (residueToRootsQuot 
   have : MonoidHom.mker (MulEquiv.toMonoidHom (MulEquiv.symm (bij_nth_roots_gen hR hn))) = ⊥ := by
     sorry
   rw [this,MonoidHom.comap_bot']
+
 
 theorem residueSymbolMapMKer :
 x ∈ MonoidHom.mker (residueSymbolMap hp hR hn) ↔
