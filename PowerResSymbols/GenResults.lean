@@ -291,7 +291,8 @@ variable {p : Ideal R} (hp : Ideal.IsMaximal p) [instFinite: Fintype (R ⧸ p)]
 variable {n : ℕ+} (hR : fullRoots n R) (hn : nice n (Ideal.Quotient.mk p))
 
 lemma imageUnit :
-  ∀ (x : p.primeCompl), IsUnit ((Ideal.Quotient.mk p).toMonoidHom x) := by
+  --∀ (x : p.primeCompl), IsUnit ((Ideal.Quotient.mk p).toMonoidHom x) := by
+  ∀ (x : p.primeCompl), IsUnit ((Ideal.Quotient.mk p) x) := by
   intro x
   have : Ideal.Quotient.mk p x ≠ 0 := by
     by_contra h
@@ -334,7 +335,9 @@ MonoidHom.mker (residueSymbolMap hp hR hn) = MonoidHom.mker (residueToRootsQuot 
   simp [residueSymbolMap]
   rw [← MonoidHom.comap_mker]
   have : MonoidHom.mker (MulEquiv.toMonoidHom (MulEquiv.symm (bij_nth_roots_gen hR hn))) = ⊥ := by
-    sorry
+    ext
+    rw [MonoidHom.mem_mker]
+    simp only [MulEquiv.coe_toMonoidHom, MulEquivClass.map_eq_one_iff, Submonoid.mem_bot]
   rw [this,MonoidHom.comap_bot']
 
 
@@ -344,7 +347,39 @@ x ∈ MonoidHom.mker (residueSymbolMap hp hR hn) ↔
   rw [residueSymbolMapMKerSimp]
   simp [residueToRootsQuot]
   rw [← MonoidHom.comap_mker]
-  sorry
+  rw [Submonoid.mem_comap]
+  simp [residueMultMap,toRootsQuot]
+  rw [MonoidHom.mem_mker,← MonoidHom.mem_ker]
+  rw [@toRootsKer (R ⧸ p) _]
+  rw [MonoidHom.mem_range]
+  constructor
+  . intro hx
+    simp only [MonoidHom.mem_range] at hx
+    obtain ⟨ z,hz ⟩ := hx
+    simp only [pow_map, MonoidHom.mk'_apply] at hz
+    obtain ⟨y, hy⟩ := (@Ideal.Quotient.mk_surjective R _ p) z
+    have : (Ideal.Quotient.mk p) (y^n.val) = z^n.val := by
+      rw [← hy,map_pow]
+    use y
+    rw [← Ideal.Quotient.eq,this]
+    rw_mod_cast [hz]
+    rw [IsUnit.unit_spec]
+  intro h
+  obtain ⟨ y,hy⟩ := h
+  rw [← Ideal.Quotient.eq] at hy
+  simp_rw [← hy]
+  simp only [map_pow]
+  have : IsUnit ((Ideal.Quotient.mk p) y) := by
+    simp only [map_pow] at hy
+    have := imageUnit hp x
+    rw [← hy] at this
+    have nzero : n.val ≠ 0 := by linarith [n.pos]
+    rw [isUnit_pow_iff nzero] at this
+    exact this
+  use IsUnit.unit this
+  simp [pow_map]
+  rw [← Units.eq_iff]
+  simp
 
 end ResidueMultMap
 
@@ -411,8 +446,3 @@ noncomputable def powerResidueSymbol (hpn : IsCoprime (n : ℕ) (Ideal.absNorm p
 
 
 end NumberField
-
-/-
-lemma card_units : Fintype.card (Rˣ) = Fintype.card R - 1 := by
-  rw [← Fintype.card_units]
--/
